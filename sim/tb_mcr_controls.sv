@@ -44,7 +44,7 @@ module tb_mcr_controls;
         if(port0!==8'hf7) $fatal(1,"Spinner Start 2 chord");
         tick_frame();if(port1!==8'h86) $fatal(1,"Start chord must not spin");
         mode=4;#1;
-        if(port2[7]!==1'b0 || port0!==8'hf7)$fatal(1,"Environmental cabinet strap/start chord");
+        if(port2[7]!==1'b0 || port0!==8'hf6)$fatal(1,"Environmental cabinet strap/start+coin chord");
         r=0;start=0;tick_frame();
         r=1;tick_frame();if(port1!==8'h85)$fatal(1,"Environmental spinner");
         mode=2;#1;if(port2[7]!==1'b1)$fatal(1,"Upright cabinet strap");

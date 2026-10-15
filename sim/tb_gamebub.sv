@@ -227,7 +227,7 @@ module tb_gamebub;
                         $fwrite(fd,"%c%c%c",8'(frame[i][8:6]*255/7),
                             8'(frame[i][5:3]*255/7),8'(frame[i][2:0]*255/7));
                     $fclose(fd);
-                    $display("FRAME %0d: colored=%0d unknown=%0d audio_changes=%0d", number,colored,unknown_pixels,audio_changes);
+                    $display("FRAME %0d: colored=%0d unknown=%0d audio_changes=%0d speech_cmd=%0d speech_stream=%0d speech_audio=%0d", number,colored,unknown_pixels,audio_changes,dut.speech.seen,dut.speech.pia_loose,dut.speech.tms_audio_nz);
                 end
                 $fflush();
                 btn[10] = number >= coin_frame && number < coin_frame+6 && coin_frame >= 0;

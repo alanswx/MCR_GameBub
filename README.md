@@ -1,7 +1,7 @@
 # Bally Midway MCR for Game Bub
 
 Work in progress: **one combined MCR core on Game Bub rev 4**,
-with 19 configured MRA game sets across MCR1, MCR2, MCR3 and MCR3 Mono configured. Choose a `.rom` from the
+with 19 MRA game sets across MCR1, MCR2, MCR3 and MCR3 Mono configured. Choose a `.rom` from the
 file browser; CRC32 recognition selects the board, controls, DIP defaults
 and portrait orientation automatically. Stock MRA index-0 outputs are
 listed in [the game catalog](gamedb/games.tsv); [games.json](gamedb/games.json)
@@ -44,9 +44,11 @@ player 2 start, leaving R available for rotation during play. Spinner and
 trackball buttons are substitutes for the arcade controls. Journey has its
 normal SSIO sound; its separate *Separate Ways* music sample is not yet
 implemented. Upright Discs of Tron has no speech. Choose **Discs of Tron
-(Environmental)** for the Squawk & Talk board, ported from your
+(Environmental)** for the Squawk & Talk board, ported from the
 [MCR3 speech branch](https://github.com/alanswx/Arcade-MCR3_MiSTer/tree/squawk-n-talk-speech).
-Insert a coin and start a game to hear its greeting. The optional cabinet
+Allow startup to finish, then start a game to hear its greeting. In the
+Environmental version, Start also inserts a coin as in the source wrapper.
+The optional cabinet
 backdrop from that branch is not included. No firmware update is needed. High scores
 are not saved. MCR3 Mono provides player 1 controls only. Rampage and Power Drive use
 coin and action buttons to join, as on the arcade. Scrolling MCR hardware

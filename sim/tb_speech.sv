@@ -98,14 +98,18 @@ module tb_speech;
         op4=8'h1b;repeat(50200)@(negedge clk);op4=8'h02;
         repeat(80000)@(negedge clk);
         $display("COMMAND STATUS CPU=%h progress=%h IRQ edges=%h reads=%h command=%h ws=%h",cpu_address,progress,dut.irq_edges,dut.pia2_rd,dut.cmd_at_read,dut.ws_count8);$fflush();
-        repeat(40000000)@(negedge clk);
+        repeat(8000000)@(negedge clk);
         if(!streaming||!nonzero||changes<100||writes<100)$fatal(1,"Speech did not play: stream=%b nonzero=%b changes=%d",streaming,nonzero,changes);
         $fclose(output_file);
         $display("SPEECH PASS: real firmware/TMS5200, four-slot SRAM CPU/audio identical to source ROM, changes=%0d samples=%0d",changes,samples);
         $finish;
     end
     initial begin
-        #3000000000;
-        $fatal(1,"Speech boot/playback timeout");
+        #5000000000.0;
+        $fatal(1,"Speech boot/playback timeout PC=%h A=%h B=%h X=%h I=%b",dut.u_cpu.u_regs.pc,dut.u_cpu.u_regs.a,dut.u_cpu.u_regs.b,dut.u_cpu.u_regs.x,dut.u_cpu.u_regs.i);
+    end
+    initial repeat(5) begin
+        #500000000.0;
+        $display("SPEECH BOOT PC=%h A=%h B=%h X=%h I=%b",dut.u_cpu.u_regs.pc,dut.u_cpu.u_regs.a,dut.u_cpu.u_regs.b,dut.u_cpu.u_regs.x,dut.u_cpu.u_regs.i);$fflush();
     end
 endmodule

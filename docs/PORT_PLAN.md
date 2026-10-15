@@ -955,3 +955,14 @@ real-firmware speech/reference, in-game command generation, routed timing
 and handheld validation are being checked separately; these are not implied
 by the platform/recipe tests. Journey's sampled music and the optional
 cabinet backdrop remain outside this speech port.
+
+The first routed speech build (`55af35d`) meets timing at +0.023 ns WNS and
++0.037 ns WHS, using 128/135 BRAM tiles. A final source-wrapper parity fix
+makes Environmental Start/Start2 also assert coin, as upstream does; the
+upright mapping is retained. Rebuild after that change before packaging.
+The ROM's exhaustive RAM, PIA and TMS initialization lasts about 2.65 seconds
+in the reference test. A cue at 20 ms was premature, and a 3-second test
+guard expired during the now-audible phrase. The final test waits for the
+firmware's CLI and allows the complete startup plus playback check. The
+initial full-core game test pressed coin/start during startup/title animation
+and did not establish in-game speech; later input timing is being tested.

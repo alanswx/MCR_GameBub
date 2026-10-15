@@ -91,8 +91,9 @@ Kozmik Krooz'r: D-pad ship, A fire, B shield, L/R turret; Start+R starts P2.
 Discs of Tron: D-pad move, A toss, B deflect, X/Y aim up/down, L/R rotate.
 Start+R starts player 2 in Discs of Tron.
 Discs of Tron (upright) has no speech. Choose Discs of Tron (Environmental)
-for the Squawk & Talk speech board. Controls are the same; insert a coin
-and start a game to hear the greeting. No firmware update is required.
+for the Squawk & Talk speech board. Allow startup to finish, then start a
+game to hear the greeting. Start also inserts a coin in Environmental mode,
+as in the source wrapper. No firmware update is required.
 Journey: D-pad move, A fire, R start player 2. Normal sound is included;
 the separate Separate Ways music sample is not implemented yet.
 Kick: Left/Right or L/R trackball, A kick, B faster movement; Start+R starts P2.

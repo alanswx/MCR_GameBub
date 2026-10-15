@@ -105,7 +105,7 @@ module gb_mcr_controls (
         endcase
         else case (mode)
             2,4: begin // Discs of Tron: movement, toss/deflect, aim up/down.
-                port0 = ~{service,2'b00,fa,s2,s1,1'b0,coin && focus};
+                port0 = ~{service,2'b00,fa,s2,s1,1'b0,((coin && focus) || (mode == 4 && (s1 || s2)))};
                 port1 = ~{1'b0,spin[9:3]};
                 port2 = ~{(mode == 4),fb,fc,fd,d,u,rt,lt};
             end
