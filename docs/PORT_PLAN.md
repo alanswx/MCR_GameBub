@@ -745,3 +745,63 @@ it locates the one generated ROM rather than assuming the tool's output
 basename (Two Tigers has a different/truncated name). Packaging includes
 all ten local ROMs with full MRA names, the PROM and controls/install notes.
 Build, startup and routed timing validation are in progress.
+
+
+### All four board families authorized (0.5.0)
+
+The user explicitly selected including MCR1 and MCR3 Mono now. Rechecked
+live official default-branch HEADs before importing: MCR1 remains
+`16216779fd849f37b5541339790a7452817a77d0`, MCR3 Mono remains
+`6c82a4bc9a830b05a94a780c0c3091167b98a9b8`; both source clones were clean.
+`scripts/import_remaining.py` reproduces eight additional board/CPU files,
+sharing the byte-identical existing Z80/CTC/RAM/SSIO primitives. Exact
+patches name non-static VHDL-93 port expressions, add the MCR1 PROM ports,
+rename the FX68K declaration package for mixed-language binding, expand
+preprocessor constants and embed the CPU's own microcode from its source
+files. These are processor control stores, not game ROMs. The upstream
+simulation-only arithmetic workaround remains simulation-only. No upstream
+clone is edited. Import manifests record revisions and verification dates.
+
+All 18 MRA index-0 images assemble and match their declared MD5s. The eight
+new sets are Kick, Solar Fox, Demolition Derby (Mono), Max RPM, Power Drive,
+Rampage, Sarge and Star Guards. Mono sets are 0x48000 (Turbo Cheap Squeak)
+or 0x80000 (Sounds Good); MCR1 sets are 0x1a000. The PROM moves to
+0x100f0000 to avoid overlap with the larger ROM file. Update core metadata
+and bitstream together. The largest SG set uses 256 KiB sprites and
+128 KiB sound in SRAM; the board layout also supports up to 256 KiB sound.
+The earlier estimate of full 512 KiB external storage was the layout's
+capacity, rather than the actual 384 KiB used by these SG MRA sets.
+
+A generated checksum decoder recognizes the first 256 ROM bytes to select
+loading layout before any game-specific address ranges begin. The full-ROM
+CRC, exact byte count and file size still gate startup. Unknown/damaged
+files cannot start a board. The early identities are all distinct in the
+catalog. The main CPU ROM remains shared BRAM. Runtime SRAM retains the
+three-slot sprite-low/sprite-high/sound schedule. Mono uses the upper SRAM
+half for sound and lower half for transposed sprite planes, with the
+upstream SG byte-plane sound ordering. MCR1 has a distinct 0x8000 sound base.
+MCR1's 4-bit RGB is reduced to RGB333 for the shared framebuffer. Both
+sideways settings extend to Kick and Solar Fox. Existing board engines,
+video capture correction and optional framework transform remain intact.
+
+Handheld controls cover all games, with player 1 maps for Mono. Single-stick
+Sarge steering follows the upstream optional tank steering mode. Max RPM
+honors the game-selected ADC channel and edge-triggered gearbox. Derby
+honors the four-player wheel mux with other players idle. Sounds Good status
+bits feed the game input ports as in the official wrapper. Normal sound
+hardware is included for every board; Journey's separate WAV music remains
+unimplemented, as previously documented. High scores are not persisted.
+The controls/install guide is included in the private ZIP.
+
+Mixed-language elaboration now includes actual FX68K, 6809 and all four
+Z80 video engines. The widened regression address bus needed an explicit
+unsigned/masked cast; the old 14-bit signed cast had sign-extended into the
+new 18-bit bus. The original MCR2/MCR3 platform tests then pass. New tests
+verify SG/TCS 32-bit sprite plane packing through full-width boundaries,
+16-bit sound byte order and eight-clock deadlines, MCR1's sound bank, all
+18 input maps, gear edges, Max RPM ADC capture/hold, Derby mux and sound
+status. The experimental fast model packs the CPU's three bit-only structs
+in generated simulation code because Verilator rejects mixed continuous
+and clocked drivers on distinct members of an unpacked struct. Production
+RTL keeps the upstream struct representation.
+Startup/capture checks and routed resource/timing checks are in progress.

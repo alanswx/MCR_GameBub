@@ -24,7 +24,9 @@ def main():
             raise SystemExit(f"{name} failed: {log}")
         print(f"{name}: passed ({log.relative_to(ROOT)})", flush=True)
 
-    run("vhdl", ["xvhdl", *[str(ROOT / "rtl/mcr3" / Path(f).with_suffix(".vhdl")) for f in FILES], str(ROOT / "rtl/mcr2/mcr2.vhdl")])
+    run("vhdl", ["xvhdl", *[str(ROOT / "rtl/mcr3" / Path(f).with_suffix(".vhdl")) for f in FILES], str(ROOT / "rtl/mcr2/mcr2.vhdl"), str(ROOT / "rtl/mcr1/mcr1.vhdl"),
+        *[str(ROOT / "rtl/mcr3mono" / f) for f in ("FX68K/fx68k.vhdl", "cpu09l_128a.vhdl", "pia6821.vhdl", "turbo_cheap_squeak.vhdl", "sounds_good.vhdl", "mcr3mono.vhdl")]])
+    run("mono_cpu", ["xvlog", "--sv", str(ROOT / "rtl/mcr3mono/fx68k.sv")])
     sv = sorted(str(p) for p in (ROOT / "rtl/gamebub").glob("*.sv"))
     run("sv", ["xvlog", "--sv", *sv, str(Path(os.environ["XILINX_VIVADO"]) / "data/verilog/src/glbl.v")])
     run("elaborate", ["xelab", "-L", "unisims_ver", "-L", "unimacro_ver",
@@ -50,6 +52,11 @@ def main():
         run("controls_run", ["xsim", "mcr_controls_test", "--runall"])
         if "MCR CONTROLS PASS" not in (work / "controls_run.log").read_text():
             raise SystemExit("MCR control test failed")
+        run("layouts_compile", ["xvlog", "--sv", str(ROOT / "sim/tb_memory_layouts.sv")])
+        run("layouts_elaborate", ["xelab", "--timescale", "1ns/1ps", "work.tb_memory_layouts", "-s", "memory_layouts_test"])
+        run("layouts_run", ["xsim", "memory_layouts_test", "--runall"])
+        if "MEMORY LAYOUT PASS" not in (work / "layouts_run.log").read_text():
+            raise SystemExit("New memory layout test failed")
         run("family_reset_build", ["verilator", "--binary", "--timing", "-j", "8", "-O3",
             "-Wno-fatal", "-Wno-lint", "-Wno-style", "--top-module", "tb_reset_families",
             "--Mdir", str(work / "reset_obj"), str(ROOT / "rtl/gamebub/gb_mcr_reset.sv"),

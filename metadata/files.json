@@ -10,7 +10,7 @@
       "optional": false,
       "read_only": true,
       "address": "0x10000000",
-      "max_size": "0x3A000"
+      "max_size": "0x80000"
     },
     {
       "id": 1,
@@ -18,7 +18,7 @@
       "filename": "ssio.prom",
       "optional": false,
       "read_only": true,
-      "address": "0x10040000",
+      "address": "0x100F0000",
       "exact_size": "0x20"
     }
   ]

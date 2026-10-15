@@ -63,7 +63,7 @@ Extract this ZIP at the root of your Game Bub SD card. Merge cores/ and
 roms/ with the existing folders. Launch Bally Midway MCR (alanswx.MCR).
 This installs beside the proven Bally Midway MCR3 core (alanswx.MCR3).
 
-Choose any of the ten game ROMs in roms/MCR.
+Choose any of the 18 game ROMs in roms/MCR.
 ROM recognition selects MCR2 or MCR3 and the controls automatically.
 The required sound PROM is already in the core folder.
 
@@ -78,7 +78,7 @@ Hold sideways (CCW): turn counterclockwise, joypad at bottom; Up/Down move left/
 The firmware menu keeps its normal orientation. Allow a few seconds for
 Satan's Hollow's startup memory/color tests and delayed restart.
 Picture defaults to 4:3. Startup double-reset correction is included.
-Version 0.4.0 adds all ten official MCR2/MCR3 MRA game sets.
+Version 0.5.0 configures 18 games across MCR1, MCR2, MCR3 and MCR3 Mono.
 Tron: D-pad move, A fire, L/R spinner. Start+R starts player 2.
 Two Tigers (Tron Conversion): Left/Right turn, A shoot, B bomb, X dogfight.
 L/R also turn; Start+R starts player 2. Player 2's controls are inactive.
@@ -88,15 +88,23 @@ Discs of Tron: D-pad move, A toss, B deflect, X/Y aim up/down, L/R rotate.
 Start+R starts player 2 in Discs of Tron.
 Journey: D-pad move, A fire, R start player 2. Normal sound is included;
 the separate Separate Ways music sample is not implemented yet.
-Portrait settings apply to Satan's Hollow, Tron and Journey.
+Kick: Left/Right or L/R trackball, A kick, B faster movement; Start+R starts P2.
+Solar Fox: D-pad move, A fire, B speed/select (used to start, as on the arcade).
+Rampage: D-pad move, A punch/join, B jump. Select coin, then A joins.
+Sarge: D-pad single-stick tank steering, A/B weapons.
+Power Drive: L/R left/right wheels, B wheelie, A toggles 2WD/4WD. Select coin.
+Max RPM: Up throttle, Left/Right steer, A shift up, B shift down.
+Demolition Derby: Left/Right or L/R steer, A forward, B reverse; Start+R starts P2.
+Star Guards: D-pad move, A fire right/B down/X up/Y left.
+MCR3 Mono games provide player 1 controls only. Other players remain idle.
+Portrait settings apply to Kick, Solar Fox, Satan's Hollow, Tron and Journey.
 It retains MCR2's corrected 18-source-pixel horizontal capture delay
 and restores the MCR2 one-second delayed restart.
 
 Tapper, Timber, and Domino Man worked in the previous hardware-confirmed build.
-The previous portrait picture looks good on device; the new CCW grip needs testing.
+Upright and both sideways grips are device-confirmed. New game maps need testing.
 It uses a local, optional framework rotation change; it is a private test.
-High scores are not saved. MCR1, scrolling games, and MCR3 Mono are not
-included yet. New games need hardware gameplay checks. Other ROM revisions are not recognized.
+High scores are not saved. Scrolling MCR hardware is not included. New games need hardware gameplay checks. Other ROM revisions are not recognized.
 
 This private test bundle includes your local ROM data. Do not publish it.
 """

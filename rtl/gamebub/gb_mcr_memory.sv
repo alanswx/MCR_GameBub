@@ -7,6 +7,11 @@
 module gb_mcr_memory (
     input wire clk, reset,
     input wire game_mcr2,
+    input wire [1:0] game_family, load_family,
+    input wire game_sg, load_sg,
+    output wire [18:0] mono_dl_addr,
+    output wire mono_dl_wr,
+    output wire [15:0] mono_sound_data,
     output wire [16:0] m2_dl_addr,
     output wire m2_dl_wr,
     input wire wr_req,
@@ -16,9 +21,9 @@ module gb_mcr_memory (
     output reg initialized,
     input wire [15:0] cpu_addr,
     output reg [7:0] cpu_data,
-    input wire [13:0] sound_addr,
+    input wire [17:0] sound_addr,
     output wire [7:0] sound_data,
-    input wire [14:0] sprite_addr,
+    input wire [15:0] sprite_addr,
     output reg [31:0] sprite_data,
     output wire [15:0] dl_addr,
     output wire [7:0] dl_data,
@@ -35,21 +40,36 @@ module gb_mcr_memory (
 );
     reg [7:0] main_rom [0:65535];
     reg [10:0] clear_addr;
-    wire main_sel = wr_addr < 20'h0e000;
-    wire sound_sel = wr_addr >= 20'h0c000 && wr_addr < 20'h12000;
-    wire sprite_sel = wr_addr >= 20'h12000 && wr_addr < 20'h32000;
-    wire bg_sel = wr_addr >= 20'h32000 && wr_addr < 20'h3a000;
-    wire prom_sel = wr_addr >= 20'h40000 && wr_addr < 20'h40020;
+    wire loading_mono = load_family == 3;
+    wire [19:0] mono_bg_base = load_sg ? 20'h50000 : 20'h30000;
+    wire [19:0] mono_sound_base = load_sg ? 20'h60000 : 20'h40000;
+    wire main_sel = wr_addr < (loading_mono ? 20'h10000 : 20'h0e000);
+    wire sound_sel = loading_mono ? wr_addr >= mono_sound_base && wr_addr < 20'h80000 :
+        wr_addr >= (load_family == 0 ? 20'h08000 : 20'h0c000) && wr_addr < 20'h12000;
+    wire sprite_sel = loading_mono ? wr_addr >= 20'h10000 && wr_addr < mono_bg_base :
+        wr_addr >= 20'h12000 && wr_addr < 20'h32000;
+    wire bg_sel = !loading_mono && wr_addr >= 20'h32000 && wr_addr < 20'h3a000;
+    wire mono_bg_sel = loading_mono && wr_addr >= mono_bg_base && wr_addr < mono_sound_base;
+    wire prom_sel = wr_addr >= 20'hf0000 && wr_addr < 20'hf0020;
     wire start_write = wr_req && !wr_ack && initialized;
-    wire [19:0] sprite_offset = wr_addr - 20'h12000;
+    wire [19:0] sprite_offset = wr_addr - (loading_mono ? 20'h10000 : 20'h12000);
     wire [19:0] bg_offset = wr_addr - 20'h32000;
-    wire [17:0] sram_wr_addr = sprite_sel ?
-        {2'b01, sprite_offset[14:0], sprite_offset[16]} : wr_addr[18:1];
-    wire high_byte = sprite_sel ? sprite_offset[15] : wr_addr[0];
+    wire [19:0] mono_sound_offset = wr_addr - mono_sound_base;
+    wire [17:0] mono_sprite_write = load_sg ?
+        {1'b0,sprite_offset[15:0],sprite_offset[17]} : {2'b00,sprite_offset[14:0],sprite_offset[16]};
+    wire [17:0] mono_sound_write = 18'h20000 + (load_sg ?
+        {1'b0,mono_sound_offset[17],mono_sound_offset[15:0]} : {1'b0,mono_sound_offset[17:1]});
+    wire [17:0] sram_wr_addr = loading_mono ? (sprite_sel ? mono_sprite_write : mono_sound_write) :
+        sprite_sel ? {2'b01,sprite_offset[14:0],sprite_offset[16]} : wr_addr[18:1];
+    wire high_byte = loading_mono ?
+        (sprite_sel ? (load_sg ? sprite_offset[16] : sprite_offset[15]) : (load_sg ? mono_sound_offset[16] : wr_addr[0])) :
+        sprite_sel ? sprite_offset[15] : wr_addr[0];
     wire sram_req = start_write && (sound_sel || sprite_sel);
     wire sram_ack;
     assign m2_dl_addr = !initialized ? {6'd0, clear_addr} : wr_addr[16:0];
     assign m2_dl_wr = start_write && wr_addr >= 20'h10000 && wr_addr < 20'h1c000;
+    assign mono_dl_addr = !initialized ? {8'd0,clear_addr} : (wr_addr - mono_bg_base);
+    assign mono_dl_wr = start_write && mono_bg_sel;
     assign dl_addr = !initialized ? {5'd0, clear_addr} : bg_offset[15:0];
     assign dl_data = !initialized ? 8'd0 : wr_data;
     assign dl_wr = start_write && bg_sel;
@@ -62,14 +82,19 @@ module gb_mcr_memory (
     assign prom_wr = wr_req && initialized && prom_sel;
 
     reg [1:0] slot;
-    reg [14:0] sprite_latched;
-    wire [17:0] read_addr = slot == 0 ? {2'b01, sprite_addr, 1'b0} :
-                                  slot == 1 ? {2'b01, sprite_latched, 1'b1} :
-                                  (game_mcr2 ? 18'h06000 : 18'h07000) + {5'd0, sound_addr[13:1]};
+    reg [15:0] sprite_latched;
+    wire [17:0] mono_sprite_read = game_sg ? {1'b0,sprite_addr,1'b0} : {2'b00,sprite_addr[14:0],1'b0};
+    wire [17:0] mono_sprite_saved = game_sg ? {1'b0,sprite_latched,1'b1} : {2'b00,sprite_latched[14:0],1'b1};
+    wire [17:0] read_addr = game_family == 3 ?
+        (slot == 0 ? mono_sprite_read : slot == 1 ? mono_sprite_saved : 18'h20000 + {1'b0,sound_addr[17:1]}) :
+        slot == 0 ? {2'b01,sprite_addr[14:0],1'b0} :
+        slot == 1 ? {2'b01,sprite_latched[14:0],1'b1} :
+        (game_family == 0 ? 18'h04000 : game_mcr2 ? 18'h06000 : 18'h07000) + {5'd0,sound_addr[13:1]};
     wire [15:0] q;
     wire [17:0] q_addr;
     wire q_valid;
     reg [15:0] sprite_low, sound_word;
+    assign mono_sound_data = sound_word;
     assign sound_data = sound_addr[0] ? sound_word[15:8] : sound_word[7:0];
     gb_sram sram (
         .clk(clk), .reset(reset), .wr_req(sram_req),
@@ -95,7 +120,7 @@ module gb_mcr_memory (
             if (!wr_req) begin wr_ack <= 0; wr_error <= 0; end
             else if (start_write) begin
                 wr_ack <= (sound_sel || sprite_sel) ? sram_ack : 1'b1;
-                wr_error <= !(main_sel || sound_sel || sprite_sel || bg_sel || prom_sel);
+                wr_error <= !(main_sel || sound_sel || sprite_sel || bg_sel || mono_bg_sel || prom_sel);
             end
             if (wr_req || !initialized) slot <= 0;
             else begin
@@ -103,7 +128,7 @@ module gb_mcr_memory (
                 if (slot == 0) sprite_latched <= sprite_addr;
             end
             if (q_valid) begin
-                if (q_addr[17:16] == 2'b01) begin
+                if (game_family == 3 ? !q_addr[17] : q_addr[17:16] == 2'b01) begin
                     if (!q_addr[0]) sprite_low <= q;
                     else sprite_data <= {q, sprite_low};
                 end else sound_word <= q;

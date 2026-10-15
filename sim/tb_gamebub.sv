@@ -128,8 +128,8 @@ module tb_gamebub;
     endtask
     string rom_path, prom_path, out_path;
     integer frames = 120, dump = 30, aspect = 1;
-    integer expected_game = 0, expected_family = 0, portrait_mode = 0;
-    integer orientation_probe, expected_portrait=0, expected_dips=255;
+    integer expected_game = 0, expected_family = 2, portrait_mode = 0;
+    integer orientation_probe, expected_portrait=0, expected_dips=255, expected_size=237568, expected_sg=0;
     reg [31:0] expected_crc;
     integer coin_frame = -1, start_frame = -1;
     bit running = 0;
@@ -149,12 +149,14 @@ module tb_gamebub;
         if (!$value$plusargs("expected_crc=%h", expected_crc)) $fatal(1, "Missing expected CRC");
         if ($value$plusargs("expected_portrait=%d", expected_portrait)) begin end
         if ($value$plusargs("expected_dips=%d", expected_dips)) begin end
+        if ($value$plusargs("expected_size=%d", expected_size)) begin end
+        if ($value$plusargs("expected_sg=%d", expected_sg)) begin end
         wait (locked);
         repeat (32) @(negedge clk_sys);
         fw_reset = 0;
-        load_file(rom_path, 0, 'h10000000, expected_family == 1 ? 'h1c000 : 'h3a000);
-        load_file(prom_path, 1, 'h10040000, 32);
-        if (dut.game_shollow !== (expected_family == 1 && expected_game == 0) || dut.game_mcr2 !== (expected_family == 1) || dut.game_timber !== (expected_family == 0 && expected_game == 1) || dut.game_mod !== expected_game || dut.game_portrait !== expected_portrait[0] || dut.dips !== expected_dips[7:0] || dut.host.rom_crc !== expected_crc)
+        load_file(rom_path, 0, 'h10000000, expected_size);
+        load_file(prom_path, 1, 'h100f0000, 32);
+        if (dut.game_family !== expected_family[1:0] || dut.load_family !== expected_family[1:0] || dut.game_sg !== expected_sg[0] || dut.load_sg !== expected_sg[0] || dut.game_shollow !== (expected_family == 1 && expected_game == 0) || dut.game_mcr2 !== (expected_family == 1) || dut.game_timber !== (expected_family == 2 && expected_game == 1) || dut.game_mod !== expected_game || dut.game_portrait !== expected_portrait[0] || dut.dips !== expected_dips[7:0] || dut.host.rom_crc !== expected_crc)
             $fatal(1, "Automatic ROM recognition failed: game=%b CRC=%h", dut.game_timber, dut.host.rom_crc);
         $display("GAME IDENTIFIED: mod=%0d CRC=%h", expected_game, expected_crc);
         write_word('h200, aspect);

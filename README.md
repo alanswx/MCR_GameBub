@@ -1,7 +1,7 @@
 # Bally Midway MCR for Game Bub
 
-Work in progress: **one combined MCR2/MCR3 core on Game Bub rev 4**,
-with all ten official MRA game sets configured. Choose a `.rom` from the
+Work in progress: **one combined MCR core on Game Bub rev 4**,
+with 18 official MRA game sets across MCR1, MCR2, MCR3 and MCR3 Mono configured. Choose a `.rom` from the
 file browser; CRC32 recognition selects the board, controls, DIP defaults
 and portrait orientation automatically. Stock MRA index-0 outputs are
 listed in [the game catalog](gamedb/games.tsv); [games.json](gamedb/games.json)
@@ -11,7 +11,7 @@ Unknown or damaged images are rejected.
 Tapper, Timber, Domino Man, and Satan's Hollow are hardware-confirmed.
 Both sideways directions and upright portrait video work on the device;
 the sideways grip remains awkward. Rotation is complete for now.
-Version 0.4.0 enables six more games, which need device gameplay checks.
+Version 0.5.0 enables fourteen more games, which need device gameplay checks.
 It retains the corrected Domino Man alignment and startup reset sequence.
 
 Select inserts a coin; Start starts player 1. Controls are:
@@ -28,15 +28,24 @@ Select inserts a coin; Start starts player 1. Controls are:
 | Kozmik Krooz'r | D-pad ship, A fire, B shield, L/R turret |
 | Discs of Tron | D-pad move, A toss, B deflect, X/Y aim up/down, L/R rotate |
 | Journey | D-pad move, A fire, R start player 2 |
+| Kick | Left/Right or L/R trackball, A kick, B faster movement; Start+R starts P2 |
+| Solar Fox | D-pad move, A fire, B speed/select, also used to start |
+| Rampage | D-pad move, A punch/join, B jump |
+| Sarge | D-pad single-stick tank steering, A/B weapons |
+| Power Drive | L/R wheels, B wheelie, A toggle 2WD/4WD |
+| Max RPM | Up throttle, Left/Right steering, A shift up, B shift down |
+| Demolition Derby (Mono) | Left/Right or L/R steer, A forward, B reverse; Start+R starts P2 |
+| Star Guards | D-pad move, A fire right, B down, X up, Y left |
 
 Tron, Two Tigers, Kozmik Krooz'r and Discs of Tron use **Start+R** for
 player 2 start, leaving R available for rotation during play. Spinner and
 trackball buttons are substitutes for the arcade controls. Journey has its
 normal SSIO sound; its separate *Separate Ways* music sample is not yet
-implemented. High scores are not saved. MCR1, MCR3Scroll and MCR3 Mono
-are separate board integrations still to come.
+implemented. High scores are not saved. MCR3 Mono provides player 1 controls only. Rampage and Power Drive use
+coin and action buttons to join, as on the arcade. Scrolling MCR hardware
+is a separate integration.
 
-**Portrait games** applies to Satan's Hollow, Tron and Journey. **Upright**
+**Portrait games** applies to Kick, Solar Fox, Satan's Hollow, Tron and Journey. **Upright**
 is the default: normal grip and a 360x480 picture with side borders.
 **Hold sideways (CW)** fills the landscape game area; turn the Bub clockwise.
 **Hold sideways (CCW)** turns it the other way, with the joypad at the bottom.
@@ -61,8 +70,11 @@ python3 tools/prepare_mcr3.py --game tapper \
 ```
 
 Repeat with `--game` set to `timber`, `domino`, `shollow`, `tron`,
-`twotiger`, `wacko`, `kroozr`, `dotron` or `journey`, supplying that game's
+`twotiger`, `wacko`, `kroozr`, `dotron`, `journey`, `kick`, `solarfox`,
+`rampage`, `sarge`, `powerdrv`, `maxrpm`, `demoderm` or `stargrds`, supplying that game's
 local zip. The MCR2 games need the sibling `Arcade-MCR2_MiSTer` clone too.
+MCR1 and Mono games need their respective source clones. Demolition Derby
+uses the **MCR-3 Mono Board Version**, `demoderb.zip` or `demoderm.zip`.
 Two Tigers uses the **Tron Conversion** set from the merged `twotiger.zip`.
 This runs `mra -A` on the selected upstream MRA, checks the assembled ROM's
 size and MD5, and writes the selected `.rom` and `ssio.prom` under `scratch/roms`.
@@ -76,6 +88,7 @@ be loaded for sound to function. These files stay out of Git.
 source scripts/env.sh
 python3 scripts/import_mcr.py --check
 python3 scripts/import_mcr2.py --check
+python3 scripts/import_remaining.py --check
 python3 tools/generate_gamedb.py --check
 scripts/lint.sh --test
 python3 scripts/check_rotation.py --defaults
@@ -117,13 +130,13 @@ test with `python3 scripts/package.py`. Copy `build/sdcard/cores/alanswx.MCR`
 to your SD card's `cores/` folder (beside the original MCR3 core), put your
 `ssio.prom` inside it, and launch **Bally Midway MCR**. Choose
 any ROM from `roms/MCR` when launching the core. The private ZIP includes
-all ten configured game sets, a controls guide and the required SSIO PROM.
+all 18 configured game sets, a controls guide and the required SSIO PROM.
 
 For a private SD-card ZIP containing your local ROMs and PROM:
 
 ```sh
 python3 scripts/package.py --roms scratch/roms \
-  --zip build/MCR_GameBub_games_v0.4.0.zip
+  --zip build/MCR_GameBub_games_v0.5.0.zip
 ```
 
 The ZIP includes only this core, four ROMs, the PROM, installation notes,

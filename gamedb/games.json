@@ -9,7 +9,10 @@
     "size": 237568,
     "portrait": false,
     "dips": 255,
-    "crc32": "1bbba959"
+    "crc32": "1bbba959",
+    "family_id": 2,
+    "sg": false,
+    "prefix_crc32": "fccebe1a"
   },
   {
     "key": "journey",
@@ -21,7 +24,10 @@
     "size": 237568,
     "portrait": true,
     "dips": 255,
-    "crc32": "a1b44dd6"
+    "crc32": "a1b44dd6",
+    "family_id": 2,
+    "sg": false,
+    "prefix_crc32": "9c03c23c"
   },
   {
     "key": "tapper",
@@ -33,7 +39,10 @@
     "size": 237568,
     "portrait": false,
     "dips": 255,
-    "crc32": "0f584827"
+    "crc32": "0f584827",
+    "family_id": 2,
+    "sg": false,
+    "prefix_crc32": "74a42881"
   },
   {
     "key": "timber",
@@ -45,7 +54,10 @@
     "size": 237568,
     "portrait": false,
     "dips": 255,
-    "crc32": "3f49e94e"
+    "crc32": "3f49e94e",
+    "family_id": 2,
+    "sg": false,
+    "prefix_crc32": "d846c873"
   },
   {
     "key": "domino",
@@ -57,7 +69,10 @@
     "size": 114688,
     "portrait": false,
     "dips": 255,
-    "crc32": "085cde56"
+    "crc32": "085cde56",
+    "family_id": 1,
+    "sg": false,
+    "prefix_crc32": "f7d9d156"
   },
   {
     "key": "kroozr",
@@ -69,7 +84,10 @@
     "size": 114688,
     "portrait": false,
     "dips": 255,
-    "crc32": "bc914fd7"
+    "crc32": "bc914fd7",
+    "family_id": 1,
+    "sg": false,
+    "prefix_crc32": "e4711491"
   },
   {
     "key": "shollow",
@@ -81,7 +99,10 @@
     "size": 114688,
     "portrait": true,
     "dips": 255,
-    "crc32": "a2403144"
+    "crc32": "a2403144",
+    "family_id": 1,
+    "sg": false,
+    "prefix_crc32": "38edd0f9"
   },
   {
     "key": "tron",
@@ -93,7 +114,10 @@
     "size": 114688,
     "portrait": true,
     "dips": 248,
-    "crc32": "d0cbcd68"
+    "crc32": "d0cbcd68",
+    "family_id": 1,
+    "sg": false,
+    "prefix_crc32": "f7365cdb"
   },
   {
     "key": "twotiger",
@@ -105,7 +129,10 @@
     "size": 114688,
     "portrait": false,
     "dips": 255,
-    "crc32": "38d75245"
+    "crc32": "38d75245",
+    "family_id": 1,
+    "sg": false,
+    "prefix_crc32": "b33d093b"
   },
   {
     "key": "wacko",
@@ -117,6 +144,129 @@
     "size": 114688,
     "portrait": false,
     "dips": 255,
-    "crc32": "5317ce85"
+    "crc32": "5317ce85",
+    "family_id": 1,
+    "sg": false,
+    "prefix_crc32": "daa29d51"
+  },
+  {
+    "key": "kick",
+    "name": "Kick",
+    "family": 1,
+    "family_id": 0,
+    "mod": 0,
+    "mra": "Kick.mra",
+    "md5": "3759c22c8a392d0ce7f6f9783f71df1b",
+    "size": 106496,
+    "portrait": true,
+    "dips": 254,
+    "crc32": "bfb29cb2",
+    "sg": false,
+    "prefix_crc32": "c8551d9d"
+  },
+  {
+    "key": "solarfox",
+    "name": "Solar Fox",
+    "family": 1,
+    "family_id": 0,
+    "mod": 1,
+    "mra": "Solar Fox.mra",
+    "md5": "de188e839c36555915dcfac0b4e406a9",
+    "size": 106496,
+    "portrait": true,
+    "dips": 237,
+    "crc32": "08cf7fdf",
+    "sg": false,
+    "prefix_crc32": "be329931"
+  },
+  {
+    "key": "demoderm",
+    "name": "Demolition Derby",
+    "family": "3Mono",
+    "family_id": 3,
+    "mod": 4,
+    "mra": "Demolition Derby (MCR-3 Mono Board Version).mra",
+    "md5": "aff76437b13ecd375e3c5cb407bec5a9",
+    "size": 294912,
+    "portrait": false,
+    "dips": 255,
+    "crc32": "9acb49b3",
+    "sg": false,
+    "prefix_crc32": "76fe7e6b"
+  },
+  {
+    "key": "maxrpm",
+    "name": "Max RPM",
+    "family": "3Mono",
+    "family_id": 3,
+    "mod": 3,
+    "mra": "Max RPM (v2).mra",
+    "md5": "7479a399b89fb067686ca8983a4eabb9",
+    "size": 294912,
+    "portrait": false,
+    "dips": 255,
+    "crc32": "16b004e7",
+    "sg": false,
+    "prefix_crc32": "bc41a00b"
+  },
+  {
+    "key": "powerdrv",
+    "name": "Power Drive",
+    "family": "3Mono",
+    "family_id": 3,
+    "mod": 2,
+    "mra": "Power Drive.mra",
+    "md5": "c50d6870f88537f1f2a1e45c2a2f8450",
+    "size": 524288,
+    "portrait": false,
+    "dips": 255,
+    "crc32": "994e9bee",
+    "sg": true,
+    "prefix_crc32": "f9e2b63b"
+  },
+  {
+    "key": "rampage",
+    "name": "Rampage",
+    "family": "3Mono",
+    "family_id": 3,
+    "mod": 0,
+    "mra": "Rampage (Rev 3, 860827).mra",
+    "md5": "d5e60e119063e4dbd09c79b8edf3c0b9",
+    "size": 524288,
+    "portrait": false,
+    "dips": 255,
+    "crc32": "95d8ad3e",
+    "sg": true,
+    "prefix_crc32": "9fb4cc98"
+  },
+  {
+    "key": "sarge",
+    "name": "Sarge",
+    "family": "3Mono",
+    "family_id": 3,
+    "mod": 1,
+    "mra": "Sarge.mra",
+    "md5": "f4957f2d6fef5e2264dac930678a4e84",
+    "size": 294912,
+    "portrait": false,
+    "dips": 255,
+    "crc32": "517ed6bf",
+    "sg": false,
+    "prefix_crc32": "a7d2835e"
+  },
+  {
+    "key": "stargrds",
+    "name": "Star Guards",
+    "family": "3Mono",
+    "family_id": 3,
+    "mod": 5,
+    "mra": "Star Guards.mra",
+    "md5": "14a8079eb9f3ccc0a37c11842d17bd96",
+    "size": 524288,
+    "portrait": false,
+    "dips": 255,
+    "crc32": "92e1a298",
+    "sg": true,
+    "prefix_crc32": "a15e628c"
   }
 ]

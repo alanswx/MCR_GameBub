@@ -1,7 +1,7 @@
 // HostV0 command protocol and posted ROM writes. Queue/handshake pattern from
 // ColecoVision_GameBub gb_host (GPL-3.0-or-later). Byte order is little endian.
-// File 0: 0x10000000, MCR3 .rom (0x3a000 bytes).
-// File 1: 0x10040000, SSIO timing PROM (32 bytes).
+// File 0: 0x10000000, stock MRA index-0 ROM (up to 512 KiB).
+// File 1: 0x100f0000, SSIO timing PROM (32 bytes).
 // No writable files are advertised until NVRAM persistence is implemented.
 module gb_mcr_host #(
     // CRC32/ISO-HDLC of the complete stock MRA index-0 ROM, no header.
@@ -29,7 +29,9 @@ module gb_mcr_host #(
     output reg [7:0] dips,
     output reg game_timber,
     output reg game_mcr2,
-    output reg game_shollow, game_portrait,
+    output reg game_shollow, game_portrait, game_sg,
+    output reg [1:0] game_family, load_family,
+    output reg load_sg,
     output reg [2:0] game_mod,
     output reg [1:0] portrait_mode,
     output wire [31:0] debug_status
@@ -43,15 +45,23 @@ module gb_mcr_host #(
     reg [19:0] rom_bytes;
     reg rom_loading;
     wire [31:0] rom_crc = ~crc_state;
-    wire game_known, detected_mcr2, detected_portrait;
+    wire game_known, detected_mcr2, detected_portrait, detected_sg;
+    wire [1:0] detected_family;
+    wire [19:0] expected_size;
     wire [2:0] detected_mod;
     wire [7:0] detected_dips;
     gb_mcr_game #(.TAPPER_CRC32(TAPPER_CRC32), .TIMBER_CRC32(TIMBER_CRC32),
         .DOMINO_CRC32(DOMINO_CRC32), .SHOLLOW_CRC32(SHOLLOW_CRC32)) identity (
         .crc(rom_crc), .known(game_known), .mcr2(detected_mcr2),
-        .portrait(detected_portrait), .mode(detected_mod), .dips(detected_dips)
+        .portrait(detected_portrait), .mode(detected_mod), .dips(detected_dips),
+        .family(detected_family), .sg(detected_sg), .size(expected_size)
     );
-    wire [19:0] expected_size = detected_mcr2 ? 20'h1c000 : 20'h3a000;
+    wire prefix_known, prefix_sg;
+    wire [1:0] prefix_family;
+    gb_mcr_game #(.PREFIX(1)) loading_layout (
+        .crc(~crc_byte(crc_state,wr_data)), .known(prefix_known),
+        .family(prefix_family), .sg(prefix_sg), .portrait(), .mcr2(), .mode(), .dips(), .size()
+    );
     function automatic [31:0] crc_byte(input [31:0] previous, input [7:0] data);
         reg [31:0] value;
         integer bit_index;
@@ -102,7 +112,8 @@ module gb_mcr_host #(
             command_state <= 0; setup_done <= 0; run <= 0;
             present <= 0; load_error <= 0; focus <= 0;
             crc_state <= 32'hffffffff; rom_bytes <= 0;
-            rom_loading <= 0; game_timber <= 0; game_mcr2 <= 0; game_shollow <= 0; game_mod <= 0; game_portrait <= 0;
+            rom_loading <= 0; game_timber <= 0; game_mcr2 <= 0; game_shollow <= 0; game_mod <= 0; game_portrait <= 0; game_sg <= 0;
+            game_family <= 2; load_family <= 2; load_sg <= 0;
             portrait_mode <= 0;
             aspect <= 1; volume <= 0; service <= 0; dips <= 8'hff;
             for (i=0; i<8; i=i+1) command[i] <= 0;
@@ -156,10 +167,13 @@ module gb_mcr_host #(
                 2: if (wr_ack) begin
                     wr_req <= 0; engine <= 3;
                     if (wr_error) load_error <= 1;
-                    if (wr_addr < 20'h3a000) begin
+                    if (wr_addr < 20'h80000) begin
                         if (!rom_loading || wr_addr != rom_bytes) load_error <= 1;
                         else begin
                             crc_state <= crc_byte(crc_state, wr_data);
+                            if (wr_addr == 255 && prefix_known) begin
+                                load_family <= prefix_family; load_sg <= prefix_sg;
+                            end
                             rom_bytes <= rom_bytes + 1'b1;
                         end
                     end
@@ -191,7 +205,8 @@ module gb_mcr_host #(
                                   run <= 0; setup_done <= 0; present[id] <= 0;
                                   if (id == 0) begin
                                       load_error <= 0; crc_state <= 32'hffffffff;
-                                      rom_bytes <= 0; rom_loading <= 1; game_timber <= 0; game_mcr2 <= 0; game_shollow <= 0; game_mod <= 0; game_portrait <= 0;
+                                      rom_bytes <= 0; rom_loading <= 1; game_timber <= 0; game_mcr2 <= 0; game_shollow <= 0; game_mod <= 0; game_portrait <= 0; game_sg <= 0;
+            game_family <= 2; load_family <= 2; load_sg <= 0;
                                   end
                               end
                     16'h0301: if (!id_ok || load_error ||
@@ -200,10 +215,11 @@ module gb_mcr_host #(
                               else begin
                                   present[id] <= 1; file_size[id] <= command[2];
                                   if (!id) begin
-                                      game_timber <= !detected_mcr2 && detected_mod == 1;
+                                      game_timber <= detected_family == 2 && detected_mod == 1;
                                       game_mcr2 <= detected_mcr2;
                                       game_shollow <= detected_mcr2 && detected_mod == 0;
                                       game_mod <= detected_mod; game_portrait <= detected_portrait;
+                                      game_family <= detected_family; game_sg <= detected_sg;
                                       rom_loading <= 0;
                                       dips <= detected_dips;
                                   end

@@ -63,7 +63,8 @@ module mcr3_gamebub (
     wire core_reset, act_reset, focus, aspect, service;
     wire [1:0] volume;
     wire [7:0] dips;
-    wire game_timber, game_mcr2, game_shollow, game_portrait;
+    wire game_timber, game_mcr2, game_shollow, game_portrait, game_sg, load_sg;
+    wire [1:0] game_family, load_family;
     wire [2:0] game_mod;
     wire [1:0] portrait_mode;
     // Grip CW uses the raw raster; the opposite grip needs a half-turn.
@@ -84,6 +85,7 @@ module mcr3_gamebub (
         .wr_ack(wr_ack), .wr_error(wr_error),
         .core_reset(core_reset), .act_reset(act_reset), .focus(focus),
         .aspect(aspect), .volume(volume), .service(service), .dips(dips), .game_timber(game_timber), .game_mcr2(game_mcr2),
+        .game_family(game_family), .game_sg(game_sg), .load_family(load_family), .load_sg(load_sg),
         .game_shollow(game_shollow), .game_mod(game_mod), .game_portrait(game_portrait), .portrait_mode(portrait_mode),
         .debug_status(debug_status)
     );
@@ -100,19 +102,28 @@ module mcr3_gamebub (
         .machine_reset(m2_reset_sequence)
     );
 
-    wire [13:0] sound_addr;
-    wire [15:0] cpu_addr, dl_addr, m2_cpu_addr, m3_cpu_addr;
+    wire [17:0] sound_addr, mono_sound_addr;
+    wire [15:0] cpu_addr, dl_addr, m2_cpu_addr, m3_cpu_addr, mono_cpu_addr;
+    wire [14:0] m1_cpu_addr;
+    wire [13:0] m1_sound_addr;
+    wire [18:0] mono_dl_addr;
+    wire mono_dl_wr;
+    wire [15:0] mono_sound_data;
     wire [13:0] m2_sound_addr, m3_sound_addr;
     wire [16:0] m2_dl_addr;
     wire m2_dl_wr;
-    assign cpu_addr = game_mcr2 ? m2_cpu_addr : m3_cpu_addr;
-    assign sound_addr = game_mcr2 ? m2_sound_addr : m3_sound_addr;
-    wire [14:0] sprite_addr;
+    assign cpu_addr = game_family == 0 ? {1'b0,m1_cpu_addr} : game_family == 3 ? mono_cpu_addr : game_mcr2 ? m2_cpu_addr : m3_cpu_addr;
+    assign sound_addr = game_family == 3 ? mono_sound_addr : {4'd0,game_family == 0 ? m1_sound_addr : game_mcr2 ? m2_sound_addr : m3_sound_addr};
+    wire [15:0] sprite_addr, mono_sprite_addr;
+    wire [14:0] m3_sprite_addr;
+    assign sprite_addr = game_family == 3 ? mono_sprite_addr : {1'b0,m3_sprite_addr};
     wire [7:0] cpu_data, sound_data, dl_data, prom_data;
     wire [31:0] sprite_data;
     wire [4:0] prom_addr;
     wire dl_wr, dl_nvram, dl_nvram_wr, prom_wr;
     gb_mcr_memory memory (
+        .game_family(game_family), .load_family(load_family), .game_sg(game_sg), .load_sg(load_sg),
+        .mono_dl_addr(mono_dl_addr), .mono_dl_wr(mono_dl_wr), .mono_sound_data(mono_sound_data),
         .game_mcr2(game_mcr2), .m2_dl_addr(m2_dl_addr), .m2_dl_wr(m2_dl_wr),
         .clk(clk_sys), .reset(reset), .wr_req(wr_req), .wr_addr(wr_addr),
         .wr_data(wr_data), .wr_ack(wr_ack), .wr_error(wr_error), .initialized(initialized),
@@ -127,10 +138,13 @@ module mcr3_gamebub (
         .sram_dq_in(sram_dataIn), .sram_dq_out(sram_dataOut), .sram_dq_oe(sram_dataDir)
     );
 
+    wire [1:0] mono_sound_status;
+    wire [7:0] mono_output5,mono_output6;
     wire hb, vb, ce;
     wire [7:0] input_0, input_1, input_2, input_3, input_4;
     gb_mcr_controls inputs (
         .clk(clk_sys), .reset(machine_reset), .vblank(vb),
+        .family(game_family), .snd_stat(mono_sound_status), .output5(mono_output5), .output6(mono_output6),
         .mcr2(game_mcr2), .mode(game_mod), .portrait(game_portrait),
         .portrait_mode(portrait_mode), .focus(focus), .service(service), .dips(dips),
         .up(input_buttons_up), .down(input_buttons_down),
@@ -141,14 +155,20 @@ module mcr3_gamebub (
         .port2(input_2), .port3(input_3), .port4(input_4)
     );
     wire [15:0] left, right;
-    wire [2:0] r, g, b, m2_r, m2_g, m2_b, m3_r, m3_g, m3_b;
+    wire [2:0] r, g, b, m2_r, m2_g, m2_b, m3_r, m3_g, m3_b, mono_r, mono_g, mono_b;
+    wire [3:0] m1_r,m1_g,m1_b;
+    wire m1_hb,m1_vb,m1_ce,mono_hb,mono_vb,mono_ce;
+    wire [15:0] m1_left,m1_right;
+    wire [9:0] mono_audio;
     wire m2_hb, m2_vb, m2_ce, m3_hb, m3_vb, m3_ce;
     wire [15:0] m2_left, m2_right, m3_left, m3_right;
-    assign {r,g,b,hb,vb,ce,left,right} = game_mcr2 ?
+    assign {r,g,b,hb,vb,ce,left,right} = game_family == 0 ?
+        {m1_r[3:1],m1_g[3:1],m1_b[3:1],m1_hb,m1_vb,m1_ce,m1_left,m1_right} : game_family == 3 ?
+        {mono_r,mono_g,mono_b,mono_hb,mono_vb,mono_ce,mono_audio,6'd0,mono_audio,6'd0} : game_mcr2 ?
         {m2_r,m2_g,m2_b,m2_hb,m2_vb,m2_ce,m2_left,m2_right} :
         {m3_r,m3_g,m3_b,m3_hb,m3_vb,m3_ce,m3_left,m3_right};
     mcr3 machine (
-        .clock_40(clk_sys), .reset(machine_reset || game_mcr2), .tv15Khz_mode(1'b0),
+        .clock_40(clk_sys), .reset(machine_reset || game_family != 2), .tv15Khz_mode(1'b0),
         .video_r(m3_r), .video_g(m3_g), .video_b(m3_b), .video_csync(),
         .video_hblank(m3_hb), .video_vblank(m3_vb), .video_hs(), .video_vs(),
         .video_ce(m3_ce), .video_hflip(game_mod == 2), .video_vflip(1'b0),
@@ -157,13 +177,13 @@ module mcr3_gamebub (
         .input_3(input_3), .input_4(input_4), .output_4(), .mcr2p5(game_mod == 3), .hcntout(),
         .cpu_rom_addr(m3_cpu_addr), .cpu_rom_do(cpu_data),
         .snd_rom_addr(m3_sound_addr), .snd_rom_do(sound_data),
-        .sp_addr(sprite_addr), .sp_graphx32_do(sprite_data),
+        .sp_addr(m3_sprite_addr), .sp_graphx32_do(sprite_data),
         .dl_addr(dl_addr), .dl_data(dl_data), .dl_wr(dl_wr), .dl_din(),
         .dl_nvram(dl_nvram), .dl_nvram_wr(dl_nvram_wr),
         .prom_addr(prom_addr), .prom_data(prom_data), .prom_wr(prom_wr)
     );
     mcr2 machine_mcr2 (
-        .clock_40(clk_sys), .reset(machine_reset || !game_mcr2), .tv15Khz_mode(1'b0),
+        .clock_40(clk_sys), .reset(machine_reset || game_family != 1), .tv15Khz_mode(1'b0),
         .video_r(m2_r), .video_g(m2_g), .video_b(m2_b), .video_csync(),
         .video_hblank(m2_hb), .video_vblank(m2_vb), .video_hs(), .video_vs(), .video_ce(m2_ce),
         .separate_audio(1'b0), .audio_out_l(m2_left), .audio_out_r(m2_right),
@@ -174,6 +194,30 @@ module mcr3_gamebub (
         .dl_addr(m2_dl_addr), .dl_data(dl_data), .dl_wr(m2_dl_wr), .dl_din(),
         .dl_nvram(dl_nvram), .dl_nvram_wr(dl_nvram_wr),
         .prom_addr(prom_addr), .prom_data(prom_data), .prom_wr(prom_wr)
+    );
+    mcr1 machine_mcr1 (
+        .clock_40(clk_sys), .reset(machine_reset || game_family != 0), .tv15Khz_mode(1'b0),
+        .video_r(m1_r), .video_g(m1_g), .video_b(m1_b), .video_csync(),
+        .video_hblank(m1_hb), .video_vblank(m1_vb), .video_hs(), .video_vs(), .video_ce(m1_ce),
+        .separate_audio(1'b0), .audio_out_l(m1_left), .audio_out_r(m1_right),
+        .input_0(input_0), .input_1(input_1), .input_2(input_2), .input_3(input_3), .input_4(input_4),
+        .cpu_rom_addr(m1_cpu_addr), .cpu_rom_do(cpu_data), .cpu_rom_rd(),
+        .snd_rom_addr(m1_sound_addr), .snd_rom_do(sound_data), .pause(1'b0), .flip(1'b0),
+        .dl_addr(m2_dl_addr), .dl_data(dl_data), .dl_wr(m2_dl_wr), .dl_din(),
+        .dl_nvram(dl_nvram), .dl_nvram_wr(dl_nvram_wr),
+        .prom_addr(prom_addr), .prom_data(prom_data), .prom_wr(prom_wr)
+    );
+    mcr3mono machine_mono (
+        .clock_40(clk_sys), .reset(machine_reset || game_family != 3), .tv15Khz_mode(1'b0),
+        .video_r(mono_r), .video_g(mono_g), .video_b(mono_b), .video_csync(),
+        .video_hblank(mono_hb), .video_vblank(mono_vb), .video_hs(), .video_vs(), .video_ce(mono_ce),
+        .soundsgood(game_sg), .snd_stat(mono_sound_status), .audio_out(mono_audio),
+        .mod_stargrds(game_mod == 5), .input_0(input_0), .input_1(input_1), .input_2(input_2),
+        .input_3(input_3), .input_4(input_4), .output_5(mono_output5), .output_6(mono_output6),
+        .cpu_rom_addr(mono_cpu_addr), .cpu_rom_do(cpu_data), .snd_rom_addr(mono_sound_addr),
+        .snd_rom_do(mono_sound_data), .sp_addr(mono_sprite_addr), .sp_graphx32_do(sprite_data),
+        .dl_addr(mono_dl_addr), .dl_data(dl_data), .dl_wr(mono_dl_wr), .dl_din(),
+        .dl_nvram(dl_nvram), .dl_nvram_wr(dl_nvram_wr)
     );
     gb_mcr_video video (
         .clk(clk_sys), .reset(machine_reset), .ce_pix(ce),

@@ -43,7 +43,7 @@ def main():
         p.error("SSIO PROM must contain exactly 32 bytes")
     description = ET.parse(args.mra)
     rom = description.find("rom[@index='0']")
-    if rom is None or rom.get("zip") != args.game + ".zip":
+    if rom is None or rom.get("md5") != game["md5"]:
         p.error("MRA does not match the selected game")
     args.out.mkdir(parents=True, exist_ok=True)
     # Use a private staging directory so existing user ROM sets are untouched.
@@ -51,7 +51,8 @@ def main():
     with tempfile.TemporaryDirectory(prefix="mra-", dir=args.out) as stage:
         stage = Path(stage)
         shutil.copyfile(args.mra, stage / "game.mra")
-        (stage / (args.game + ".zip")).symlink_to(args.zip.resolve(strict=True))
+        for filename in rom.get("zip").split("|"):
+            (stage / filename).symlink_to(args.zip.resolve(strict=True))
         subprocess.run([str(args.mra_tool.resolve()), "-A", "game.mra"], cwd=stage, check=True)
         assembled = list(stage.glob("*.rom"))
         if len(assembled) != 1:

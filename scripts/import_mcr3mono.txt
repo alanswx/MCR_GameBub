@@ -1,0 +1,5 @@
+Upstream: https://github.com/MiSTer-devel/Arcade-MCR3Mono_MiSTer.git
+Commit: 6c82a4bc9a830b05a94a780c0c3091167b98a9b8
+Verified UTC: 2026-10-15
+Patches: static VHDL-93 port expressions; MCR1 SD-loaded shared SSIO PROM; FX68K self-contained CPU control-store initialization and macro expansion, preserving its simulation-only workaround.
+Shared primitives: byte-identical to verified MCR3 source.

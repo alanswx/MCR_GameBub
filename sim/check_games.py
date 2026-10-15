@@ -32,9 +32,9 @@ def main():
         out = folder / game['key']; out.mkdir(exist_ok=True)
         cmd = [str(binary),f"+rom={ROOT / 'scratch/roms' / (game['key'] + '.rom')}",
             f"+prom={ROOT / 'scratch/roms/ssio.prom'}",f'+out={out}',
-            f"+expected_family={int(game['family']==2)}",f"+expected_game={game['mod']}",
+            f"+expected_family={game['family_id']}",f"+expected_game={game['mod']}",
             f"+expected_crc={game['crc32']}",f"+expected_portrait={int(game['portrait'])}",
-            f"+expected_dips={game['dips']}",f'+frames={args.frames or 1}',f'+dump={args.frames or 1}']
+            f"+expected_dips={game['dips']}",f"+expected_size={game['size']}",f"+expected_sg={int(game['sg'])}",f'+frames={args.frames or 1}',f'+dump={min(args.frames,30) or 1}']
         if not args.frames: cmd.append('+orientation_only')
         log = out / 'run.log'
         with log.open('w') as stream:

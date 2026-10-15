@@ -14,7 +14,8 @@ module tb_platform;
     wire [7:0] wr_data, dips;
     wire [1:0] volume;
     wire [31:0] debug_status;
-    wire game_timber, game_shollow, game_portrait;
+    wire game_timber, game_shollow, game_portrait, game_sg, load_sg;
+    wire [1:0] game_family, load_family;
     wire [2:0] game_mod;
     wire [1:0] portrait_mode;
     // zlib CRC of pattern(0..0x39fff), independent of the RTL CRC function.
@@ -22,8 +23,8 @@ module tb_platform;
 
     wire initialized;
     reg [15:0] cpu_addr = 0;
-    reg [13:0] sound_addr = 0;
-    reg [14:0] sprite_addr = 0;
+    reg [17:0] sound_addr = 0;
+    reg [15:0] sprite_addr = 0;
     wire [7:0] cpu_data, sound_data, dl_data, prom_data;
     wire [31:0] sprite_data;
     wire [15:0] dl_addr;
@@ -34,6 +35,9 @@ module tb_platform;
     wire [17:0] sram_a;
     wire [15:0] sram_dq_out, sram_dq_in;
     wire game_mcr2;
+    wire [18:0] mono_dl_addr;
+    wire mono_dl_wr;
+    wire [15:0] mono_sound_data;
     wire [16:0] m2_dl_addr;
     wire m2_dl_wr;
     gb_mcr_memory memory (.*);
@@ -187,7 +191,7 @@ module tb_platform;
         command(16'h0102, 0, 0, 1); // Missing sound timing PROM.
         command(16'h0300, 1, 0, 0);
         for (i=0; i<32; i=i+4)
-            write_word(32'h10040000+i, {pattern(i+3),pattern(i+2),pattern(i+1),pattern(i)});
+            write_word(32'h100f0000+i, {pattern(i+3),pattern(i+2),pattern(i+1),pattern(i)});
         command(16'h0301, 1, 31, 1); // Reject wrong size.
         command(16'h0301, 1, 32, 0);
         if (!game_timber || host.rom_crc !== 32'hfb5f94cb)
@@ -200,7 +204,7 @@ module tb_platform;
             repeat (phase) @(negedge clk);
             for (probe=0; probe<128; probe=probe+1) begin
                 sprite_addr = 15'((probe * 277 + phase * 103) & 'h7fff);
-                sound_addr = 14'((probe * 131 + phase) & 'h3fff);
+                sound_addr = 18'((probe * 131 + phase) & 'h3fff);
                 cpu_addr = 16'((probe * 379) % 'he000);
                 // Upstream consumes each sprite address after eight clocks.
                 repeat (8) @(negedge clk);
@@ -226,10 +230,10 @@ module tb_platform;
         command(16'h0100, 0, 0, 0);
         if (core_reset) $fatal(1, "MCR2 did not run");
         for (probe=0; probe<128; probe=probe+1) begin
-            sound_addr = 14'(probe * 131);
+            sound_addr = 18'((probe * 131) & 'h3fff);
             cpu_addr = 16'((probe * 379) % 'hc000);
             repeat (8) @(negedge clk);
-            if (sound_data !== pattern('hc000+sound_addr)) $fatal(1, "MCR2 sound offset");
+            if (sound_data !== pattern('hc000+sound_addr)) $fatal(1, "MCR2 sound offset family=%d addr=%h data=%h word=%h physical=%h",game_family,sound_addr,sound_data,memory.sound_word,memory.read_addr);
             if (cpu_data !== pattern(cpu_addr)) $fatal(1, "MCR2 program ROM");
         end
         command(16'h0101, 0, 0, 0);

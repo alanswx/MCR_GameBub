@@ -65,7 +65,7 @@ def main():
             "--timescale", "1ns/1ps", "work.tb_gamebub", "work.glbl", "-s", "gamebub_test"])
     if args.compile_only:
         return
-    for name, sizes in (("rom", (0x1c000, 0x3a000)), ("prom", (32,))):
+    for name, sizes in (("rom", (0x1a000, 0x1c000, 0x3a000, 0x48000, 0x80000)), ("prom", (32,))):
         path = (ROOT / getattr(args, name)).resolve()
         if not path.is_file() or path.stat().st_size not in sizes:
             p.error(f"{name} must be a file of size {sizes}: {path}")
@@ -84,10 +84,10 @@ def main():
     checksum = zlib.crc32(args.rom.read_bytes())
     import json
     games = json.loads((ROOT / "gamedb/games.json").read_text())
-    known_games = {int(g["crc32"],16): (g["mod"], int(g["family"] == 2), int(g["portrait"]), g["dips"]) for g in games}
+    known_games = {int(g["crc32"],16): (g["mod"], g["family_id"], int(g["portrait"]), g["dips"], g["size"], int(g["sg"])) for g in games}
     if checksum not in known_games:
         p.error(f"Unsupported ROM CRC {checksum:08x}")
-    for argument in (f"expected_game={known_games[checksum][0]}", f"expected_family={known_games[checksum][1]}", f"expected_crc={checksum:08x}", f"expected_portrait={known_games[checksum][2]}", f"expected_dips={known_games[checksum][3]}"):
+    for argument in (f"expected_game={known_games[checksum][0]}", f"expected_family={known_games[checksum][1]}", f"expected_crc={checksum:08x}", f"expected_portrait={known_games[checksum][2]}", f"expected_dips={known_games[checksum][3]}", f"expected_size={known_games[checksum][4]}", f"expected_sg={known_games[checksum][5]}"):
         command += ["--testplusarg", argument] if args.backend == "xsim" else ["+" + argument]
     output = run("game_run", command)
     print(output[-4000:])
