@@ -224,3 +224,11 @@ The complete source change is also preserved in
 any remote fork is created. Apply it to clean framework `db9d3b0` when the
 local feature commit is unavailable. `scripts/check_rotation.py --defaults`
 runs the mapper regression and checks unchanged-core elaboration.
+
+
+The final MCR portrait build passes routed timing at unchanged frame-store
+RAM use (90/135 BRAM tiles total for the combined core). Coordinate-coded
+LCD/HDMI image rendering through the actual mapper plus read-latency model
+also passes. Hardware LCD/HDMI/menu validation and separate routed builds
+of the unchanged Coleco/IIgs ports remain prerequisites for an upstream
+submission; the byte-identical default HDL checks are already complete.

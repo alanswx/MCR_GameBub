@@ -646,3 +646,28 @@ full-image checks pass on LCD clockwise and HDMI counterclockwise output,
 including the first visible pixels across wrapped blanking and all borders.
 The prototype is now 0.3.1, superseding the earlier 0.3.0 preview ZIP.
 Corrected full-core boot validation and the final build are in progress.
+
+
+Final portrait candidate validation: the corrected four-state Xsim run
+passes 60 complete frames with zero undefined pixels in its final frame,
+including the MCR2 one-second delayed restart. Initial black frames now
+have zero unknown pixels, consistent with FPGA power-up. The faster model
+passes 240 frames and reaches Satan's Hollow's credits/insert-coin screen.
+The production mapper renders that capture as readable upright text on LCD
+and HDMI, confirming the MRA's clockwise rotation direction. The sampled
+CPU addresses, reset state, and selected ROM data match between backends
+for 630 reference samples (pass). ROM-port data during RAM/I/O accesses
+is not compared because that port is unselected then. This does not prove
+full backend/audio equivalence or hardware playability.
+
+All final platform regressions pass, including the cold/manual full-length
+family reset test. `scripts/check_rotation.py --defaults` also passes the
+mapper, boundary latch, blanking-wrap and unchanged-core elaboration tests.
+The final build records code revision `096d9bd5de9a`, WNS +0.328 ns,
+WHS +0.060 ns, 11,252 LUTs and 90/135 BRAM tiles, with no critical warnings
+or errors. The verified private archive is
+`build/MCR_GameBub_portrait_v0.3.1.zip` (four ROMs and the SSIO PROM).
+Source/metadata remain on `feature/portrait-video`; framework rotation is
+local commit `6e5adf7` with the reviewable patch preserved in this repo.
+Hardware testing of Satan's Hollow, both orientations, overlay, controls,
+sound and docking remains the next external validation step.
