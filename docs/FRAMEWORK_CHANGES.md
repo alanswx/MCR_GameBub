@@ -232,3 +232,10 @@ LCD/HDMI image rendering through the actual mapper plus read-latency model
 also passes. Hardware LCD/HDMI/menu validation and separate routed builds
 of the unchanged Coleco/IIgs ports remain prerequisites for an upstream
 submission; the byte-identical default HDL checks are already complete.
+
+
+The 0.3.2 MCR setting also exposes the opposite sideways grip. Holding the
+handheld clockwise requests transform 0; holding it counterclockwise
+requests transform 2 (180 degrees relative to the raw raster). Upright
+requests transform 1. These use the existing four-way framework interface,
+with no further framework changes and no additional framebuffer memory.

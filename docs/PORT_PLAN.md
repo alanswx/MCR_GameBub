@@ -689,4 +689,21 @@ The framework already supports these transforms, so no framework change or
 additional image RAM is needed. The previous build used 90/135 BRAM tiles.
 Targeted input tests cover both grips, unused axes, focus and Domino controls;
 platform tests cover all setting values and invalid-value fallback.
-Validation and routed build results follow when complete.
+All mixed-language platform, raster, input and full-length family-reset
+regressions pass (`build/portrait-ccw-platform.log`). The production mapper
+passes all 1,618,944 coordinate checks and frame-boundary latch tests
+(`build/portrait-ccw-rotation.log`). Full-core Verilator integration loads
+the real Satan's Hollow and Domino Man ROMs, auto-detects them, and sweeps
+all three settings: the portrait core requests turns 1/0/2, while Domino
+stays at turn 0 (`build/portrait-ccw-integration.log`,
+`build/portrait-ccw-domino.log`). These short integration tests stop before
+CPU startup; they are not another full game-boot or audio test.
+A real credits capture rendered through turn 2 has the expected opposite
+sideways direction (`scratch/shollow-attract/ccw_lcd.png`).
+The routed build from source commit `06e7565` passes all timing constraints:
+WNS +0.241 ns, WHS +0.043 ns, zero failing endpoints, 11,248 LUTs and
+90/135 BRAM tiles. No additional framebuffer RAM was used. The new CCW
+grip still needs on-device confirmation. The private archive
+`build/MCR_GameBub_portrait_v0.3.2.zip` passes package freshness, timing,
+ROM/PROM checksums, ZIP integrity and per-file byte verification. The build
+finished without errors or critical warnings.

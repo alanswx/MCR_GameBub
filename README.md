@@ -91,7 +91,9 @@ python3 sim/render_rotated.py scratch/shollow-reference/frame_0060.ppm \
   --out scratch/shollow-reference/upright.ppm
 ```
 
-Pass `--hdmi` for the HDMI geometry or `--rotation 0` for sideways play.
+Pass `--hdmi` for HDMI geometry, `--rotation 0` for the CW handheld grip,
+or `--rotation 2` for the CCW grip. These numbers describe the framebuffer
+transform, rather than the direction you turn the handheld.
 
 The experimental `--backend verilator` uses GHDL 4.1 conversion and
 Verilator 5.052, but has shown boot differences from Xsim. Use Xsim for
