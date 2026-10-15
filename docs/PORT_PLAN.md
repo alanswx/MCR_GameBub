@@ -862,3 +862,57 @@ required for that approach: the missing work is FPGA sample storage,
 playback/control and mixing, plus optional sample metadata. No firmware
 upgrade requirement has been established. README and future ZIP guides now
 state both audio limitations explicitly.
+
+### Located speech implementation and public source repository
+
+The user correctly recalled implementing Squawk & Talk. A live GitHub check
+found `alanswx/Arcade-MCR3_MiSTer` branch `squawk-n-talk-speech` at
+`09c8a26ee6e2c828f8cb12cd1b317235c758bcd1`, 11 commits ahead of upstream's
+unchanged `1ec8944c939ba5fcb4bcdfc5dd3e051a6273d141`. Its first commit
+`5ebc9c4a0f6e583c1ec3b759727a269160f955a7` implements MC6802/jt680x,
+two PIAs, TMS5200 and AD558, adds Environmental mod 4, and records working
+DE10-Nano speech. Later commits record phrase comparisons and a backdrop.
+The upstream repository's full pull-request list contains no speech PR.
+`alanswx/Arcade-MCR2-TangFPGA` main also contains `src/rtl/squawk_n_talk.sv`
+and the TMS5200 modules. This code is not yet imported into Game Bub; the
+current 18-set catalog still intentionally contains only upright `dotron`.
+The earlier upstream-only investigation missed this existing feature branch.
+
+The user requested a public `alanswx/MCR_GameBub` repository and proposed
+forking the framework. The `alanswx/framework` fork now publishes the tested
+`feature/video-rotation` commit `6e5adf7ed3d8776f504d55e6dbb8d6fcc5cfa930`.
+The MCR submodule URL points to that fork, making recursive clones complete
+without applying a private commit. No PR or push to `gamebub/framework` was
+made. Historical local-only instructions above are superseded by this
+explicit publication authorization. Only source and ROM recipes are being
+published, not the private ROM-containing ZIP or a bitstream release.
+
+The routed v0.5.0 build from `06fc15c` meets timing: WNS +0.272 ns, WHS
++0.023 ns, 22,940 LUTs and 127/135 BRAM tiles. The eight new-board startup
+checks pass 90 frames with Auto aspect (`build/four-families-startup-auto.log`);
+this is a startup check, not proof of every attract sequence or audio path.
+The unsuccessful four-state sound probe and its experimental reset patch
+are preserved only in ignored `scratch/sound-board-investigation/`; neither
+is part of the production import or a passing-test claim. Production imported
+RTL remains the same as the hardware-test bundle.
+
+The requested offline builder is `web/MCR-ROM-Builder.html`, a generated
+standalone page with no runtime dependencies or embedded ROM data. It uses
+the 18 catalog identities and official index-0 recipes, recognizes ZIP chip
+contents by CRC, supports merged/parent inputs, exports individual `.rom`
+files or an SD-layout ZIP, and accepts or extracts the matching SSIO PROM.
+`tools/check_rom_builder.py --browser` verifies all 18 outputs byte-for-byte
+against local mra-tools results and MRA MD5s, renamed/missing/corrupt inputs,
+malformed/encrypted/unsupported/ZIP64 archives, exported ZIP integrity and
+native Chrome decompression plus file-selection/PROM UI. Source/template
+and generation instructions are in `web/README.md`. Environmental `dotrone`
+is intentionally not offered before the speech board is actually ported.
+
+Before the initial public push, all 230 existing historical blobs were
+checked for game/data/build extensions and private-key/token signatures:
+none were found. Ignore rules now also exclude stand-alone bitstreams,
+Vivado reports/checkpoints, simulator objects, local agent state, credentials
+and additional archive formats. Checks cover 21 excluded paths and 11
+permitted source paths, including the HTML and MRA recipes. The source
+provenance notice preserves component terms without inventing a blanket
+licence for imported code.

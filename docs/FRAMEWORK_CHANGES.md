@@ -239,3 +239,14 @@ handheld clockwise requests transform 0; holding it counterclockwise
 requests transform 2 (180 degrees relative to the raw raster). Upright
 requests transform 1. These use the existing four-way framework interface,
 with no further framework changes and no additional framebuffer memory.
+
+## Public source setup
+
+The user has now authorized a public `alanswx/MCR_GameBub` source repository
+and proposed a framework fork. The fork is
+[`alanswx/framework`](https://github.com/alanswx/framework); its
+`feature/video-rotation` branch publishes the same tested `6e5adf7` commit.
+The MCR submodule URL points there and remains pinned to that exact commit.
+Recursive clones can build without a separately applied patch. The patch
+above remains as a review artifact. No upstream PR or bitstream release
+has been made; the remaining upstream validation requirements still apply.

@@ -13,6 +13,19 @@ usage_statistics_webtalk.*
 xsim.dir/
 *.wdb
 *.pb
+*.bit
+*.rbf
+*.dcp
+*.edf
+*.edif
+*.ltx
+*.rpt
+*.log
+/obj_dir/
+work-obj*.cf
+*.o
+*.a
+*.so
 
 # --- Simulation --------------------------------------------------------------
 /sim/obj_*
@@ -34,6 +47,10 @@ xsim.dir/
 *.wav
 *.prom
 *.7z
+*.rar
+*.tar
+*.tar.gz
+*.tgz
 /releases/
 
 # --- Scratch and editor/OS noise -----------------------------------------------
@@ -48,3 +65,14 @@ __pycache__/
 .vscode/
 /.venv/
 ._*
+
+# Local agent state, credentials and environment files
+/.agents/
+/.codex/
+/.aws/
+.env
+.env.*
+!.env.example
+!.env.sample
+*.pem
+*.key

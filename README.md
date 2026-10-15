@@ -42,7 +42,10 @@ player 2 start, leaving R available for rotation during play. Spinner and
 trackball buttons are substitutes for the arcade controls. Journey has its
 normal SSIO sound; its separate *Separate Ways* music sample is not yet
 implemented. Discs of Tron uses the upright ROM set, without speech; the
-Environmental version's Squawk & Talk board is not implemented. High scores
+Environmental version's Squawk & Talk board is not implemented in this port.
+The existing implementation is in the
+[MCR3 speech branch](https://github.com/alanswx/Arcade-MCR3_MiSTer/tree/squawk-n-talk-speech)
+and has not been merged upstream. High scores
 are not saved. MCR3 Mono provides player 1 controls only. Rampage and Power Drive use
 coin and action buttons to join, as on the arcade. Scrolling MCR hardware
 is a separate integration.
@@ -64,6 +67,21 @@ Manual 4:3 and native-width overrides remain available.
 ## Local ROM preparation
 
 No game ROMs or sound PROM data are included. Supply your own game sets.
+The easiest option is the standalone
+[MCR ROM Builder](web/MCR-ROM-Builder.html): download that HTML file and open
+it in a current browser. Drop your MAME ZIPs onto it to download verified
+`.rom` files, or an SD-folder ZIP with games under `roms/MCR/`. Everything
+runs locally, including decompression; there are no uploads or external
+scripts. Parent and merged sets can be supplied together. The page supports
+the 18 catalog sets, not arbitrary MAME revisions.
+
+Keep `ssio.prom` from your core installation, or supply your own matching
+32-byte PROM to the page. The builder can also find it in a supplied ROM
+ZIP. Install the core separately; the builder's ZIP contains game data and
+the PROM when provided. Journey's separate music sample is not included.
+
+For command-line preparation instead:
+
 Build sebdel's `mra-tools-c` in the sibling directory and clone
 `MiSTer-devel/Arcade-MCR3_MiSTer` there as described in `CLAUDE.md`.
 
@@ -87,6 +105,20 @@ SSIO timing PROM. The PROM is separate from the MRA's index-0 ROM; it must
 be loaded for sound to function. These files stay out of Git.
 
 ## Validation and build
+
+Clone with submodules so the tested rotation framework is available:
+
+```sh
+git clone --recurse-submodules https://github.com/alanswx/MCR_GameBub.git
+cd MCR_GameBub
+```
+
+The framework submodule uses
+[`alanswx/framework`](https://github.com/alanswx/framework/tree/feature/video-rotation),
+pinned to commit `6e5adf7` on `feature/video-rotation`. Upstream remains
+`gamebub/framework`; the fork keeps the rotation change separate for review.
+Existing checkouts can run `git submodule sync` followed by
+`git submodule update --init --recursive`.
 
 ```sh
 source scripts/env.sh
@@ -143,12 +175,26 @@ python3 scripts/package.py --roms scratch/roms \
   --zip build/MCR_GameBub_games_v0.5.0.zip
 ```
 
-The ZIP includes only this core, four ROMs, the PROM, installation notes,
+The ZIP includes only this core, all 18 catalog ROMs, the PROM, installation notes,
 and checksums. It leaves existing settings and other cores untouched.
 It contains local ROM data and is not a public release.
 
-Upstream licence notices are retained; publication and the
-repository licence remain to be settled with the owner.
+Upstream copyright and licence notices are retained in their source files;
+the imported components retain their respective terms. See
+[source provenance](NOTICE.md). This source repository contains no game
+ROMs, sound samples, PROM data, private SD-card bundles or FPGA bitstreams.
+
+The standalone builder is generated from the catalog and the upstream MRAs:
+
+```sh
+python3 tools/generate_rom_builder.py --check
+python3 tools/check_rom_builder.py --browser
+```
+
+Regeneration requires the four sibling MiSTer source clones. Its tests also
+require your local MAME ZIPs and reference `.rom` files; use `--mame-dir`
+and `--reference-dir` to select them. The browser check uses Chrome/Chromium,
+Node, and Python's `websocket-client` package. No ROM data enters the HTML.
 
 For a catalog identity/DIP/orientation check using the experimental fast model:
 

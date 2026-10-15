@@ -46,11 +46,13 @@ Two finished ports are the working templates; copy their patterns:
 
 ## Rules
 
-* **`framework/` is a submodule pinned to upstream `db9d3b0`.** Framework
+* **`framework/` is a submodule of `alanswx/framework`, pinned to rotation
+  commit `6e5adf7` based on upstream `db9d3b0`.** Framework
   changes are allowed only as `docs/FRAMEWORK_CHANGES.md` describes: on a
   branch of a fork, opt-in, default behaviour bit-identical, written to be
-  sent upstream. Never push to `gamebub/framework`. Ask the user before
-  creating the GitHub fork. A bitstream built on a modified framework
+  sent upstream. Never push to `gamebub/framework`. The user authorized the
+  public fork and source push; the rotation branch is `feature/video-rotation`.
+  A bitstream built on a modified framework
   falls under CERN-OHL-S (`framework/LICENSE`), so nothing built on it is
   released until the change is merged upstream, unless the user decides
   otherwise.
@@ -72,8 +74,10 @@ Two finished ports are the working templates; copy their patterns:
 * Licence: Dar's MCR files say "Educational use only / Do not redistribute
   synthesized file with roms". MiSTer distributes these bitstreams without
   ROMs. Settle the licence for this repo with the user before publishing
-  anything.
+  bitstream releases. The user authorized public source publication under
+  the existing component notices; see `NOTICE.md`.
 * Use the scratchpad or `scratch/` for temporary files, not `/tmp`.
-* Commit locally after each working step. There is no GitHub repo yet:
-  ask before creating one or pushing.
+* Commit locally after each working step. The user authorized creating and
+  pushing the public source repository `alanswx/MCR_GameBub`. Keep private
+  ROM-containing hardware-test bundles out of it.
 * Keep `docs/PORT_PLAN.md` up to date with findings, as the other ports do.

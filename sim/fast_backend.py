@@ -51,8 +51,18 @@ def build(work, run):
     # and clocked drivers. These three CPU structs contain only packed bits.
     fx68k = work / "fx68k_sim.sv"
     fx68k.write_text((ROOT / "rtl/mcr3mono/fx68k.sv").read_text().replace("typedef struct {", "typedef struct packed {"))
-    sv = sorted(str(p) for p in (ROOT / "rtl/gamebub").glob("*.sv") if p.name != "gb_clocks.sv")
-    run("verilator_build", ["verilator", "--binary", "--timing", "-j", "8", "-O3",
+    # Inactive boards are held in reset and cannot affect selected outputs.
+    # Keep their clocks during loading (for download RAM ports), then quiesce
+    # them during play. The selected engine retains the exact 40 MHz clock.
+    top = work / "mcr3_gamebub_sim.sv"
+    top_text = (ROOT / "rtl/gamebub/mcr3_gamebub.sv").read_text()
+    for family in range(4):
+        before = f".clock_40(clk_sys), .reset(machine_reset || game_family != {family})"
+        assert top_text.count(before) == 1
+        top_text = top_text.replace(before, f".clock_40(clk_sys && (core_reset || game_family == {family})), .reset(machine_reset || game_family != {family})")
+    top.write_text(top_text)
+    sv = sorted(str(p) for p in (ROOT / "rtl/gamebub").glob("*.sv") if p.name not in ("gb_clocks.sv", "mcr3_gamebub.sv"))
+    run("verilator_build", ["verilator", "--binary", "--timing", "-j", "8", "-O3", "-CFLAGS", "-O3",
         "--no-assert-case", "-Wno-fatal", "-Wno-lint", "-Wno-style", "-Wno-TIMESCALEMOD", "+1364-2005ext+v",
         "--top-module", "tb_gamebub", "--Mdir", str(work / "obj"), "-o", "Vtb_gamebub",
-        str(generated), str(fx68k), *sv, str(ROOT / "sim/gb_clocks.sv"), str(ROOT / "sim/tb_gamebub.sv")])
+        str(generated), str(fx68k), str(top), *sv, str(ROOT / "sim/gb_clocks.sv"), str(ROOT / "sim/tb_gamebub.sv")])
