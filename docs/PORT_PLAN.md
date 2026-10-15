@@ -558,4 +558,14 @@ undefined pixels in the final capture. Rev 4 routed timing also passes:
 WNS +0.363 ns, WHS +0.049 ns, no critical warnings or errors. The bitstream
 records source revision `b1c962c990c9`. The verified private update ZIP is
 `build/MCR_GameBub_combined_v0.2.1.zip`; the prior combined ZIP is retained
-for comparison. Hardware confirmation of the corrected alignment is pending.
+for comparison. Hardware confirmation is recorded below.
+
+
+### Combined v0.2.1 hardware confirmation
+
+The user retested the alignment update and reported: "the video look
+perfect - the other games look good". This confirms the corrected Domino
+Man capture alignment and continued correct video for Tapper and Timber.
+Version 0.2.1 is the confirmed combined MCR2/MCR3 baseline. The bitstream
+is unchanged; documentation and private ZIP installation notes now reflect
+the result. Other families remain subsequent integration work.

@@ -10,8 +10,8 @@ MRAs' index-0 outputs listed in [gamedb/games.tsv](gamedb/games.tsv).
 Unknown or damaged images are rejected instead of using the wrong controls.
 
 All three games are hardware-confirmed to run in the combined core.
-Version 0.2.1 corrects the horizontal shift reported for Domino Man; its
-alignment needs a hardware retest. Automatic ROM recognition and the
+Version 0.2.1's corrected Domino Man alignment is also hardware-confirmed;
+Tapper and Timber continue to look correct. Automatic ROM recognition and the
 double-reset startup fix are retained. See the
 [port plan](docs/PORT_PLAN.md) for validation details.
 

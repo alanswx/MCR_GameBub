@@ -71,8 +71,8 @@ Domino Man: A swat, R player 2 start (alternating).
 Picture defaults to 4:3. Startup double-reset correction is included.
 Version 0.2.1 restores MCR2's 18-source-pixel horizontal capture delay.
 
-All three games run on hardware in the combined core. This update corrects
-Domino Man's reported horizontal shift; please check its picture alignment.
+All three games run on hardware in the combined core. The user confirmed
+Domino Man's corrected alignment looks perfect and the other games look good.
 High scores are not saved. MCR1, scrolling games, and MCR3 Mono are not
 included yet. Other ROM revisions are not recognized.
 
