@@ -6,9 +6,8 @@ selects the correct controls automatically. Supported files are the stock
 MRAs' index-0 outputs listed in [gamedb/games.tsv](gamedb/games.tsv).
 Unknown or damaged images are rejected instead of using the wrong controls.
 
-The first hardware test ran Tapper with picture, controls, and sound after
-a manual Reset. This build includes the upstream double-reset startup fix;
-cold launch and Timber still need hardware testing. See the
+Both Tapper and Timber are hardware-confirmed to start and play correctly
+with automatic ROM recognition and the double-reset startup fix. See the
 [port plan](docs/PORT_PLAN.md) for validation details.
 
 Both games use D-pad movement, Select for coin, and Start for player 1.

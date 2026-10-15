@@ -69,10 +69,10 @@ Tapper: A fill, R player 2 start (alternating).
 Timber: A axe right, B axe left. Single-player controls only in this build.
 Picture defaults to 4:3. The startup double-reset correction is included.
 
-Tapper picture, controls, and sound worked on hardware after manual Reset
-in the previous build. This update's automatic startup and Timber still
-need hardware testing. High scores are not saved yet. Other MCR games
-and other ROM revisions are not recognized by this test build.
+Both Tapper and Timber have been confirmed to start and play correctly
+on Game Bub hardware with automatic recognition and the startup fix.
+High scores are not saved yet. Other MCR games and other ROM revisions
+are not recognized by this build.
 
 This private test bundle includes your local ROM data. Do not publish it.
 """

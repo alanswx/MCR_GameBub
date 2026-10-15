@@ -459,3 +459,12 @@ Tapper's matching actual-ROM Xsim regression also passed: mod 0,
 CRC 0f584827, ten complete startup frames. Both supported game identities
 have therefore been checked through the real host download path. Timber
 playability and automatic cold launch still await hardware confirmation.
+
+### Hardware confirmation: two-game baseline (2026-10-14)
+
+The user tested the Tapper/Timber ZIP and reported: "both games start up
+and work well". This confirms both supported games, automatic recognition,
+and normal startup with the double-reset correction on the Game Bub.
+It supersedes the pending hardware checks above. No further manual Reset
+workaround was reported. This is the working baseline for the proposed
+merged MCR expansion; other families and NVRAM persistence remain future work.
