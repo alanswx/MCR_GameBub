@@ -553,4 +553,9 @@ only MCR2 capture timing, not the MCR3 path, ROM data, or controls. Metadata
 version is 0.2.1. `sim/tb_mcr2_raster.sv` checks the real board's blanking at
 every pixel of a 634x525 frame, including the 18-pixel lead-in and exactly
 512x480 active pixels. This raster test and all platform regressions pass.
-Corrected full-core capture and routing are pending.
+Corrected Domino Man Xsim validation passes ten complete frames with zero
+undefined pixels in the final capture. Rev 4 routed timing also passes:
+WNS +0.363 ns, WHS +0.049 ns, no critical warnings or errors. The bitstream
+records source revision `b1c962c990c9`. The verified private update ZIP is
+`build/MCR_GameBub_combined_v0.2.1.zip`; the prior combined ZIP is retained
+for comparison. Hardware confirmation of the corrected alignment is pending.
