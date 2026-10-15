@@ -50,9 +50,10 @@ def main():
         text = replace(text, '=> ' + expression + ',', '=> ' + signal + ',')
         assignments += signal + ' <= ' + expression + ';\n'
     text = replace(text, '-- Z80-CTC (MK3882)', assignments + '-- Z80-CTC (MK3882)')
-    # Port the Tang merge's progressive 512x480 window. The MiSTer window
-    # is only 478 active lines and cannot fill Game Bub's 240-line capture.
-    text = replace(text, "if hcnt >= 2+16 and  hcnt < 514+16 and\n\t\t\t\t\tvcnt >= 2 and  vcnt < 481 then video_hblank <= '0';", "if hcnt < 512 then video_hblank <= '0';")
+    # Keep MiSTer's 18-pixel RGB pipeline compensation. Tang moves blanking
+    # to zero but compensates separately in its framebuffer wrapper.
+    # Retain Tang's 480-line vertical window for Game Bub's 240-line capture.
+    text = replace(text, "if hcnt >= 2+16 and  hcnt < 514+16 and\n\t\t\t\t\tvcnt >= 2 and  vcnt < 481 then video_hblank <= '0';", "if hcnt >= 18 and hcnt < 530 then video_hblank <= '0';")
     text = replace(text, "if vcnt >= 2 and vcnt < 480 then", "if vcnt < 480 then")
     dest = ROOT / 'rtl/mcr2/mcr2.vhdl'
     if args.check:
@@ -61,7 +62,7 @@ def main():
     else:
         dest.parent.mkdir(exist_ok=True)
         dest.write_text(text)
-        manifest.write_text(f'Upstream: {URL}\nCommit: {commit}\nVerified UTC: {datetime.now(timezone.utc).date()}\nPatches: SD-loaded SSIO PROM; static VHDL-93 port expressions; Tang 512x480 progressive active window (60363fa2a2a5e50e07c48bfe084bb61e00b1d393).\nShared dependencies: byte-identical to verified MCR3 source (except external PROM initializer).\n')
+        manifest.write_text(f'Upstream: {URL}\nCommit: {commit}\nVerified UTC: {datetime.now(timezone.utc).date()}\nPatches: SD-loaded SSIO PROM; static VHDL-93 port expressions; 480-line progressive window from Tang (60363fa2a2a5e50e07c48bfe084bb61e00b1d393), with original 18-pixel horizontal pipeline compensation.\nShared dependencies: byte-identical to verified MCR3 source (except external PROM initializer).\n')
     print('Verified MCR2' if args.check else 'Imported MCR2')
 
 if __name__ == '__main__':

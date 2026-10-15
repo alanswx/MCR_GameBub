@@ -523,8 +523,10 @@ pixels in the final frame. The experimental converted backend also passes
 120 frames through the grid/color-pattern boot sequence; this is not a
 hardware gameplay claim. Tapper's combined-core ten-frame Xsim capture is
 byte-identical to the previous auto-detection baseline. Timber also passes ten Xsim frames and matches its previous startup
-capture byte for byte. An extended Domino boot run with coin/start input
-is still in progress.
+capture byte for byte. The experimental converted backend also passed 300 frames with coin/start
+injection; captures still show diagnostic color patterns, so that run alone
+does not establish gameplay or audio correctness. Hardware feedback below
+is stronger evidence of playability.
 
 Next integration boundaries: add MCR1 with a fresh upstream verification,
 retain per-family reset isolation, and measure the cost before hoisting
@@ -534,3 +536,21 @@ Cheap Squeak Deluxe audio/68000 ROM routing. Portrait games also need a
 usable orientation/control plan. Each step must keep stock-ROM recognition
 and the three-game baseline passing; a family engine's presence alone does
 not make every game supported.
+
+
+### MCR2 horizontal alignment correction (2026-10-14)
+
+The user tested the combined ZIP: "tapper and timber look good. domino man
+works but the screen seems shifted", then requested restoring the 18-pixel
+start delay. This confirms all three games run on hardware, while exposing
+a capture alignment error. The Tang board's zero-based horizontal blanking
+is paired with a separate `cap_delay` in its framebuffer wrapper; importing
+only the zero-based blanking lost that RGB-pipeline compensation on Game Bub.
+
+The MCR2 import now retains upstream's horizontal start at 18 and exclusive
+end at 530, while preserving the full 480-line vertical window. This changes
+only MCR2 capture timing, not the MCR3 path, ROM data, or controls. Metadata
+version is 0.2.1. `sim/tb_mcr2_raster.sv` checks the real board's blanking at
+every pixel of a 634x525 frame, including the 18-pixel lead-in and exactly
+512x480 active pixels. This raster test and all platform regressions pass.
+Corrected full-core capture and routing are pending.

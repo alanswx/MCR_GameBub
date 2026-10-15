@@ -69,10 +69,10 @@ Tapper: A fill, R player 2 start (alternating).
 Timber: A axe right, B axe left. Single-player controls only.
 Domino Man: A swat, R player 2 start (alternating).
 Picture defaults to 4:3. Startup double-reset correction is included.
+Version 0.2.1 restores MCR2's 18-source-pixel horizontal capture delay.
 
-This is the first combined MCR2/MCR3 hardware candidate. Please test cold
-launch, picture, controls and sound for all three games. Tapper and Timber
-worked in the earlier MCR3-only build; the combined build needs a retest.
+All three games run on hardware in the combined core. This update corrects
+Domino Man's reported horizontal shift; please check its picture alignment.
 High scores are not saved. MCR1, scrolling games, and MCR3 Mono are not
 included yet. Other ROM revisions are not recognized.
 

@@ -359,7 +359,7 @@ begin
                                                                   -- back porch  48/25*20 = 38
 				--video_blankn <= '0';
 				video_hblank <= '1';
-				if hcnt < 512 then video_hblank <= '0';
+				if hcnt >= 18 and hcnt < 530 then video_hblank <= '0';
 				end if;
 				
 				video_vblank <= '1';

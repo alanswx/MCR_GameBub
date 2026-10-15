@@ -34,6 +34,11 @@ def main():
         run("test_run", ["xsim", "platform_test", "--runall"])
         if "PLATFORM PASS" not in (work / "test_run.log").read_text():
             raise SystemExit("Platform test did not reach its success marker")
+        run("raster_compile", ["xvlog", "--sv", str(ROOT / "sim/tb_mcr2_raster.sv")])
+        run("raster_elaborate", ["xelab", "--timescale", "1ns/1ps", "work.tb_mcr2_raster", "-s", "mcr2_raster_test"])
+        run("raster_run", ["xsim", "mcr2_raster_test", "--runall"])
+        if "MCR2 RASTER PASS" not in (work / "raster_run.log").read_text():
+            raise SystemExit("MCR2 raster test did not reach its success marker")
     print("Combined MCR mixed-language checks passed.")
 
 

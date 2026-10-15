@@ -2,15 +2,17 @@
 
 Work in progress: **one combined MCR2/MCR3 core on Game Bub rev 4**,
 supporting Tapper, Timber, and Domino Man. It uses Dar's current MiSTer board
-engines and the Tang port's MCR2 progressive video adjustment. Choose a
+engines and the Tang port's MCR2 full-height video adjustment, while
+retaining MiSTer's 18-pixel horizontal pipeline compensation. Choose a
 `.rom` from the file browser; CRC32 recognition
 selects the correct controls automatically. Supported files are the stock
 MRAs' index-0 outputs listed in [gamedb/games.tsv](gamedb/games.tsv).
 Unknown or damaged images are rejected instead of using the wrong controls.
 
-The earlier MCR3-only Tapper/Timber build is hardware-confirmed to start
-and play correctly
-with automatic ROM recognition and the double-reset startup fix. See the
+All three games are hardware-confirmed to run in the combined core.
+Version 0.2.1 corrects the horizontal shift reported for Domino Man; its
+alignment needs a hardware retest. Automatic ROM recognition and the
+double-reset startup fix are retained. See the
 [port plan](docs/PORT_PLAN.md) for validation details.
 
 All three games use D-pad movement, Select for coin, and Start for player 1.
