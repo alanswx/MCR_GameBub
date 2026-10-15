@@ -20,6 +20,7 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--trace-cpu", action="store_true")
     p.add_argument("--require-speech", action="store_true", help="require actual in-game Environmental speech")
+    p.add_argument("--request-speech", action="store_true", help="Verilator: request phrase through the game's own RAM flag, as in the source MAME reference")
     p.add_argument("--orientation-only", action="store_true", help="check all grip requests after ROM detection, then stop")
     p.add_argument("--backend", choices=("xsim", "verilator"), default="xsim")
     p.add_argument("--rom", type=Path, default=Path("scratch/roms/tapper.rom"))
@@ -35,6 +36,8 @@ def main():
     mode.add_argument("--compile-only", action="store_true")
     mode.add_argument("--run-only", action="store_true")
     args = p.parse_args()
+    if args.request_speech and args.backend != 'verilator':
+        p.error('--request-speech requires the Verilator RAM model')
     if args.frames < 1 or args.dump < 1:
         p.error("frames and dump must be positive")
     work = ROOT / ("build/check" if args.backend == "xsim" else "build/fast")
@@ -84,6 +87,8 @@ def main():
         command += ["--testplusarg", "trace_cpu"] if args.backend == "xsim" else ["+trace_cpu"]
     if args.require_speech:
         command += ["--testplusarg", "require_speech"] if args.backend == "xsim" else ["+require_speech"]
+    if args.request_speech:
+        command += ['+request_speech']
     checksum = zlib.crc32(args.rom.read_bytes())
     import json
     games = json.loads((ROOT / "gamedb/games.json").read_text())

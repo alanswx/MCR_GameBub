@@ -966,3 +966,45 @@ guard expired during the now-audible phrase. The final test waits for the
 firmware's CLI and allows the complete startup plus playback check. The
 initial full-core game test pressed coin/start during startup/title animation
 and did not establish in-game speech; later input timing is being tested.
+
+The final routed production source is `80ab2884e1a2`: WNS +0.046 ns, WHS
++0.029 ns, zero failing endpoints, 24,900 LUTs and 128/135 BRAM tiles. The
+private `build/MCR_GameBub_games_v0.6.0.zip` contains all 19 verified ROMs,
+PROM, metadata, bitstream and install/checksum files; it is not uploaded to
+GitHub. The bitstream embeds revision `80ab2884e1a2`; subsequent validation
+and documentation changes do not change production RTL.
+
+`build/speech-reference-final.log` passes the primary four-state comparison:
+real firmware, MC6802/PIAs/TMS5200, actual SRAM pin timing/scheduler versus
+the source one-clock ROM, identical CPU bus execution and audio throughout
+startup and a phrase segment. Audio changes 21,820 times across 136,747
+captured samples; the command handler reads the correct two nibbles. A
+separate reset probe also passes with MCR's one-clock delayed restart; the
+reset hypothesis was ruled out and no production reset change was made.
+
+The full host upload is checked against all 16,384 speech-ROM bytes in SRAM,
+not just CRC recognition. A focused MCR3 game snapshot keeps the actual
+host/memory, MCR3 video/main CPU, SSIO, controls and speech board, omitting
+only the three unselected engines. Its frame 120 is byte-identical to the
+full four-family snapshot (SHA256
+`dfc1d5fbd49508f7b834f5fd1b953976f5d6993f91b146fa3b7a3a638d844c1c`).
+Natural coin/start input during the title sequence did not establish speech.
+The final command-path check uses the branch's MAME reference mechanism:
+request $2B via E4D6 and E420 bit 4, leaving the real game CPU and SSIO to
+generate OP4. This mechanism was cross-checked with local MAME, which emits
+OP4=1B then 02 through the game's own routines. The first combined run
+already produced streaming, nonzero speech, but its test assertion used the
+source's `seen` debug flag. That two-bit edge counter saturates only after
+three edges, so a single complete command pulse (two edges) leaves it low.
+The corrected check requires the actual command counter, streaming and
+nonzero TMS audio. It does not weaken speech into an address-bus-only test.
+
+The corrected end-to-end check passes in
+`build/speech-game-verified.log`: the real Environmental main CPU and SSIO
+generate a command from the software request, the speech CPU streams LPC,
+the TMS produces nonzero audio, and 162 complete frames pass all raster and
+audio checks. The frame-120 full/focused parity check also passes. The
+updated full-core testbench compiles/elaborates under Xsim as well
+(`build/speech_tb_compile.log`, `build/speech_tb_elaborate.log`). These are
+simulation results; handheld gameplay and listening remain a device test.
+The hardware-test ZIP was provided to the owner while checks finished.

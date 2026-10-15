@@ -200,6 +200,24 @@ python3 tools/generate_rom_builder.py --check
 python3 tools/check_rom_builder.py --browser
 ```
 
+Speech validation with your local Environmental ROM:
+
+```sh
+source scripts/env.sh
+python3 sim/check_speech.py
+python3 sim/run_tb.py --backend verilator --rom scratch/roms/dotrone.rom \
+  --frames 210 --dump 30 --request-speech --require-speech
+```
+
+The first check compares real firmware/CPU/audio execution through the shared
+SRAM against the original one-clock ROM interface in four-state Xsim. The
+second requests a phrase through the game's RAM flag, as the source branch's
+MAME reference does; the real game CPU and SSIO generate the board command.
+It waits for speech initialization, requires a command plus audible TMS
+output, and can finish at the first complete frame meeting those checks.
+This verifies the command path; device gameplay and listening checks remain
+separate. The browser builder supports all 19 catalog sets.
+
 Regeneration requires the four sibling MiSTer source clones. The optional
 speech import check also requires the feature branch clone in
 `scratch/upstream-speech` (`git clone --depth 1 --branch squawk-n-talk-speech

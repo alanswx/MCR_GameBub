@@ -130,9 +130,23 @@ module tb_gamebub;
     integer frames = 120, dump = 30, aspect = 2;
     integer expected_game = 0, expected_family = 2, portrait_mode = 0;
     integer orientation_probe, expected_portrait=0, expected_dips=255, expected_size=237568, expected_sg=0;
+    integer speech_fd,speech_index,speech_expected;
     reg [31:0] expected_crc;
     integer coin_frame = -1, start_frame = -1;
     bit running = 0;
+`ifdef VERILATOR
+    // Same software request used by the feature branch's MAME reference
+    // script: the real game CPU/SSIO still generates the OP4 nibble timing.
+    initial if($test$plusargs("request_speech"))begin
+        wait(running && dut.speech.u_cpu.u_regs.i===1'b0);
+        repeat(80000)@(negedge clk_sys);
+        @(negedge clk_sys);
+        #1;
+        dut.machine.wram.ram[11'h4d6]=8'h2b;
+        dut.machine.wram.ram[11'h420]=dut.machine.wram.ram[11'h420]|8'h10;
+        $display("GAME SOFTWARE SPEECH REQUEST: $2B through Environmental ROM handler");$fflush();
+    end
+`endif
     initial begin
         if (!$value$plusargs("rom=%s", rom_path)) $fatal(1, "Missing +rom");
         if (!$value$plusargs("prom=%s", prom_path)) $fatal(1, "Missing +prom");
@@ -159,6 +173,17 @@ module tb_gamebub;
         if (dut.game_family !== expected_family[1:0] || dut.load_family !== expected_family[1:0] || dut.game_sg !== expected_sg[0] || dut.load_sg !== expected_sg[0] || dut.game_shollow !== (expected_family == 1 && expected_game == 0) || dut.game_mcr2 !== (expected_family == 1) || dut.game_timber !== (expected_family == 2 && expected_game == 1) || dut.game_mod !== expected_game || dut.game_portrait !== expected_portrait[0] || dut.dips !== expected_dips[7:0] || dut.host.rom_crc !== expected_crc)
             $fatal(1, "Automatic ROM recognition failed: game=%b CRC=%h", dut.game_timber, dut.host.rom_crc);
         $display("GAME IDENTIFIED: mod=%0d CRC=%h", expected_game, expected_crc);
+        if(expected_family==2 && expected_game==4)begin
+            speech_fd=$fopen(rom_path,"rb");
+            if($fseek(speech_fd,'h3a000,0)!=0)$fatal(1,"Speech ROM seek failed");
+            for(speech_index=0;speech_index<16384;speech_index++)begin
+                speech_expected=$fgetc(speech_fd);
+                if((speech_index[0] ? sram['ha000+speech_index/2][15:8] : sram['ha000+speech_index/2][7:0])!==speech_expected[7:0])
+                    $fatal(1,"Host speech ROM upload mismatch at %h",speech_index);
+            end
+            $fclose(speech_fd);
+            $display("SPEECH ROM UPLOAD PASS: all 16384 bytes through MCU host and SRAM");
+        end
         write_word('h200, aspect);
         if(dut.aspect !== (aspect == 0 || (aspect == 2 && expected_family == 0) ? 1'b0 : 1'b1))
             $fatal(1,"Wrong automatic game aspect");
@@ -227,14 +252,17 @@ module tb_gamebub;
                         $fwrite(fd,"%c%c%c",8'(frame[i][8:6]*255/7),
                             8'(frame[i][5:3]*255/7),8'(frame[i][2:0]*255/7));
                     $fclose(fd);
-                    $display("FRAME %0d: colored=%0d unknown=%0d audio_changes=%0d speech_cmd=%0d speech_stream=%0d speech_audio=%0d", number,colored,unknown_pixels,audio_changes,dut.speech.seen,dut.speech.pia_loose,dut.speech.tms_audio_nz);
+                    $display("FRAME %0d: colored=%0d unknown=%0d audio_changes=%0d speech_commands=%0d speech_stream=%0d speech_audio=%0d speech_cpu=%h op4=%h", number,colored,unknown_pixels,audio_changes,dut.speech.cmd_count,dut.speech.pia_loose,dut.speech.tms_audio_nz,dut.speech.dbg_cpu_addr,dut.m3_output4);
                 end
                 $fflush();
                 btn[10] = number >= coin_frame && number < coin_frame+6 && coin_frame >= 0;
                 btn[11] = number >= start_frame && number < start_frame+6 && start_frame >= 0;
-                if (number == frames) begin
+                if (number == frames || ($test$plusargs("request_speech") && dut.speech.cmd_count!=0 && dut.speech.tms_audio_nz && dut.speech.pia_loose)) begin
                     if($test$plusargs("require_speech")) begin
-                        if(!dut.game_speech || !dut.speech.tms_audio_nz || !dut.speech.pia_loose)
+                        // The source's `seen` debug indicator saturates a
+                        // two-bit edge counter (3 edges), so it stays low for
+                        // one complete command pulse. Count real commands.
+                        if(!dut.game_speech || dut.speech.cmd_count==0 || !dut.speech.tms_audio_nz || !dut.speech.pia_loose)
                             $fatal(1,"Game did not issue audible Environmental speech");
                         $display("IN-GAME SPEECH PASS: Environmental ROM issued commands and TMS5200 produced audio");
                     end
