@@ -1030,3 +1030,10 @@ original MAME archives covering 19 supported games, plus the existing user
 PROM and standalone converter. After extracting that pack, the converter
 regression produces all 19 files byte-identical to their MRA references;
 renamed/missing/corrupt chip and malformed/export ZIP checks also pass.
+
+The owner requested a shareable framework-change write-up and short Discord
+bullets. `docs/FRAMEWORK_ROTATION_SUMMARY.md` describes the exact three-file
+rotation patch, opt-in interface and requested-status register, scaling,
+clock-domain transfer, unchanged menu/readback paths, no-extra-framebuffer
+cost, MCR grip mapping, existing verification and outstanding upstream checks.
+It distinguishes implemented rotation from the broader video design proposals.

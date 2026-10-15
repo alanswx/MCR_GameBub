@@ -6,6 +6,11 @@ general-purpose, and harmless to every existing core. This file is the
 working design and, later, the draft of the upstream pull request. Keep it
 current.
 
+For a shareable account of the implemented patch, current validation and
+source links, see [the rotation summary](FRAMEWORK_ROTATION_SUMMARY.md).
+The candidate changes below are a broader design plan; only the optional
+game-picture rotation has been implemented in the framework fork.
+
 Framework: `framework/` = github.com/gamebub/framework `db9d3b0` (v1.1-beta).
 Paths below are relative to it; line numbers are for `db9d3b0`.
 
@@ -248,5 +253,7 @@ and proposed a framework fork. The fork is
 `feature/video-rotation` branch publishes the same tested `6e5adf7` commit.
 The MCR submodule URL points there and remains pinned to that exact commit.
 Recursive clones can build without a separately applied patch. The patch
-above remains as a review artifact. No upstream PR or bitstream release
-has been made; the remaining upstream validation requirements still apply.
+above remains as a review artifact. The user subsequently authorized the
+ROM-free v0.6.0 binary release after confirming speech on the handheld.
+No upstream PR has been made; the remaining upstream validation requirements
+still apply.
