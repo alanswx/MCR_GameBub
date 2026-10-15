@@ -3,7 +3,11 @@
 // File 0: 0x10000000, MCR3 .rom (0x3a000 bytes).
 // File 1: 0x10040000, SSIO timing PROM (32 bytes).
 // No writable files are advertised until NVRAM persistence is implemented.
-module gb_mcr_host (
+module gb_mcr_host #(
+    // CRC32/ISO-HDLC of the complete stock MRA index-0 ROM, no header.
+    parameter [31:0] TAPPER_CRC32 = 32'h0f584827,
+    parameter [31:0] TIMBER_CRC32 = 32'h3f49e94e
+) (
     input wire clk, reset,
     input wire mem_enable, mem_write,
     input wire [31:0] mem_address, mem_dataWrite,
@@ -21,6 +25,7 @@ module gb_mcr_host (
     output reg [1:0] volume,
     output reg service,
     output reg [7:0] dips,
+    output reg game_timber,
     output wire [31:0] debug_status
 );
     reg [31:0] command [0:7];
@@ -28,6 +33,21 @@ module gb_mcr_host (
     reg setup_done, run;
     reg [1:0] present;
     reg load_error;
+    reg [31:0] crc_state;
+    reg [19:0] rom_bytes;
+    reg rom_loading;
+    wire [31:0] rom_crc = ~crc_state;
+    wire game_known = rom_crc == TAPPER_CRC32 || rom_crc == TIMBER_CRC32;
+    function automatic [31:0] crc_byte(input [31:0] previous, input [7:0] data);
+        reg [31:0] value;
+        integer bit_index;
+        begin
+            value = previous ^ {24'd0, data};
+            for (bit_index=0; bit_index<8; bit_index=bit_index+1)
+                value = (value >> 1) ^ (value[0] ? 32'hedb88320 : 32'd0);
+            crc_byte = value;
+        end
+    endfunction
     reg [31:0] file_size [0:1];
     reg response_pending;
     wire is_file = mem_address[31:20] == 12'h100;
@@ -67,6 +87,8 @@ module gb_mcr_host (
             wr_addr <= 0; wr_data <= 0; lane <= 0; word_data <= 0;
             command_state <= 0; setup_done <= 0; run <= 0;
             present <= 0; load_error <= 0; focus <= 0;
+            crc_state <= 32'hffffffff; rom_bytes <= 0;
+            rom_loading <= 0; game_timber <= 0;
             aspect <= 1; volume <= 0; service <= 0; dips <= 8'hff;
             for (i=0; i<8; i=i+1) command[i] <= 0;
             for (i=0; i<2; i=i+1) file_size[i] <= 0;
@@ -100,6 +122,8 @@ module gb_mcr_host (
                             12'h804: mem_dataRead <= debug_status;
                             12'h810: mem_dataRead <= file_size[0];
                             12'h814: mem_dataRead <= file_size[1];
+                            12'h818: mem_dataRead <= rom_crc;
+                            12'h81c: mem_dataRead <= {30'd0, game_known, game_timber};
                             default: ;
                         endcase
                     end
@@ -115,6 +139,13 @@ module gb_mcr_host (
                 2: if (wr_ack) begin
                     wr_req <= 0; engine <= 3;
                     if (wr_error) load_error <= 1;
+                    if (wr_addr < 20'h3a000) begin
+                        if (!rom_loading || wr_addr != rom_bytes) load_error <= 1;
+                        else begin
+                            crc_state <= crc_byte(crc_state, wr_data);
+                            rom_bytes <= rom_bytes + 1'b1;
+                        end
+                    end
                 end
                 3: if (!wr_ack) begin
                     if (lane == 3) begin rp <= rp + 1'b1; engine <= 0; end
@@ -141,11 +172,22 @@ module gb_mcr_host (
                     16'h0300: if (!id_ok) command_state <= 2;
                               else begin
                                   run <= 0; setup_done <= 0; present[id] <= 0;
-                                  if (id == 0) load_error <= 0;
+                                  if (id == 0) begin
+                                      load_error <= 0; crc_state <= 32'hffffffff;
+                                      rom_bytes <= 0; rom_loading <= 1; game_timber <= 0;
+                                  end
                               end
                     16'h0301: if (!id_ok || load_error ||
-                                  command[2] != (id ? 32'd32 : 32'h3a000)) command_state <= 2;
-                              else begin present[id] <= 1; file_size[id] <= command[2]; end
+                                  command[2] != (id ? 32'd32 : 32'h3a000) ||
+                                  (!id && (!rom_loading || rom_bytes != 20'h3a000 || !game_known))) command_state <= 2;
+                              else begin
+                                  present[id] <= 1; file_size[id] <= command[2];
+                                  if (!id) begin
+                                      game_timber <= rom_crc == TIMBER_CRC32;
+                                      rom_loading <= 0;
+                                      dips <= 8'hff; // Both supported MRAs default to FF 00.
+                                  end
+                              end
                     // These files are read-only; reject unsupported readback.
                     default: command_state <= 2;
                 endcase

@@ -62,6 +62,7 @@ module mcr3_gamebub (
     wire core_reset, act_reset, focus, aspect, service;
     wire [1:0] volume;
     wire [7:0] dips;
+    wire game_timber;
     wire wr_req, wr_ack, wr_error, initialized;
     wire [19:0] wr_addr;
     wire [7:0] wr_data;
@@ -76,7 +77,7 @@ module mcr3_gamebub (
         .wr_req(wr_req), .wr_addr(wr_addr), .wr_data(wr_data),
         .wr_ack(wr_ack), .wr_error(wr_error),
         .core_reset(core_reset), .act_reset(act_reset), .focus(focus),
-        .aspect(aspect), .volume(volume), .service(service), .dips(dips),
+        .aspect(aspect), .volume(volume), .service(service), .dips(dips), .game_timber(game_timber),
         .debug_status(debug_status)
     );
     wire machine_reset;
@@ -107,13 +108,15 @@ module mcr3_gamebub (
         .sram_dq_in(sram_dataIn), .sram_dq_out(sram_dataOut), .sram_dq_oe(sram_dataDir)
     );
 
-    // Tapper's active-low ports, matching upstream's mod=0. Focus suppresses
-    // gameplay buttons while the firmware menu is open. R starts player 2.
-    wire [7:0] input_0 = ~{service, 3'b000, input_buttons_r && focus,
-                           input_buttons_start && focus, 1'b0, input_buttons_select && focus};
-    wire [7:0] input_1 = ~{3'b000, input_buttons_a && focus,
-                           input_buttons_up && focus, input_buttons_down && focus,
-                           input_buttons_left && focus, input_buttons_right && focus};
+    wire [7:0] input_0, input_1, input_2;
+    gb_mcr_inputs inputs (
+        .timber(game_timber), .focus(focus), .service(service),
+        .up(input_buttons_up), .down(input_buttons_down),
+        .left(input_buttons_left), .right(input_buttons_right),
+        .a(input_buttons_a), .b(input_buttons_b), .start(input_buttons_start),
+        .coin(input_buttons_select), .start2(input_buttons_r),
+        .port0(input_0), .port1(input_1), .port2(input_2)
+    );
     wire [2:0] r, g, b;
     wire hb, vb, ce;
     wire [15:0] left, right;
@@ -123,7 +126,7 @@ module mcr3_gamebub (
         .video_hblank(hb), .video_vblank(vb), .video_hs(), .video_vs(),
         .video_ce(ce), .video_hflip(1'b0), .video_vflip(1'b0),
         .separate_audio(1'b0), .audio_out_l(left), .audio_out_r(right),
-        .input_0(input_0), .input_1(input_1), .input_2(input_1),
+        .input_0(input_0), .input_1(input_1), .input_2(input_2),
         .input_3(dips), .input_4(8'hff), .output_4(), .mcr2p5(1'b0), .hcntout(),
         .cpu_rom_addr(cpu_addr), .cpu_rom_do(cpu_data),
         .snd_rom_addr(sound_addr), .snd_rom_do(sound_data),
@@ -141,6 +144,6 @@ module mcr3_gamebub (
     gb_mcr_audio audio_l (.clk(clk_sys), .reset(machine_reset), .sample(left), .volume(volume), .out(audio_left));
     gb_mcr_audio audio_r (.clk(clk_sys), .reset(machine_reset), .sample(right), .volume(volume), .out(audio_right));
     wire unused = &{1'b0, clock, host_commandCore_busy, host_commandCore_done,
-                    host_commandCore_error, input_buttons_b, input_buttons_x,
+                    host_commandCore_error, input_buttons_x,
                     input_buttons_y, input_buttons_l, debug_status};
 endmodule

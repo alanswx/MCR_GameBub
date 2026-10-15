@@ -128,6 +128,8 @@ module tb_gamebub;
     endtask
     string rom_path, prom_path, out_path;
     integer frames = 120, dump = 30, aspect = 1;
+    integer expected_game = 0;
+    reg [31:0] expected_crc;
     integer coin_frame = -1, start_frame = -1;
     bit running = 0;
     initial begin
@@ -140,11 +142,16 @@ module tb_gamebub;
         if ($value$plusargs("coin=%d", coin_frame)) begin end
         if ($value$plusargs("start=%d", start_frame)) begin end
         if (frames < 1 || dump < 1) $fatal(1, "frames and dump must be positive");
+        if (!$value$plusargs("expected_game=%d", expected_game)) $fatal(1, "Missing expected game");
+        if (!$value$plusargs("expected_crc=%h", expected_crc)) $fatal(1, "Missing expected CRC");
         wait (locked);
         repeat (32) @(negedge clk_sys);
         fw_reset = 0;
         load_file(rom_path, 0, 'h10000000, 'h3a000);
         load_file(prom_path, 1, 'h10040000, 32);
+        if (dut.game_timber !== (expected_game == 1) || dut.host.rom_crc !== expected_crc)
+            $fatal(1, "Automatic ROM recognition failed: game=%b CRC=%h", dut.game_timber, dut.host.rom_crc);
+        $display("GAME IDENTIFIED: mod=%0d CRC=%h", expected_game, expected_crc);
         write_word('h200, aspect);
         command(16'h0102, 0, 0);
         command(16'h0200, 1, 0);

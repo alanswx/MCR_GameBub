@@ -14,7 +14,9 @@ module tb_platform;
     wire [7:0] wr_data, dips;
     wire [1:0] volume;
     wire [31:0] debug_status;
-    gb_mcr_host host (.*);
+    wire game_timber;
+    // zlib CRC of pattern(0..0x39fff), independent of the RTL CRC function.
+    gb_mcr_host #(.TIMBER_CRC32(32'hfb5f94cb)) host (.*);
 
     wire initialized;
     reg [15:0] cpu_addr = 0;
@@ -93,6 +95,35 @@ module tb_platform;
         end
     endtask
 
+    reg test_timber = 0, test_focus = 1, test_service = 0;
+    reg [8:0] keys = 0;
+    wire [7:0] test_port0, test_port1, test_port2;
+    gb_mcr_inputs input_map (
+        .timber(test_timber), .focus(test_focus), .service(test_service),
+        .up(keys[0]), .down(keys[1]), .left(keys[2]), .right(keys[3]),
+        .a(keys[4]), .b(keys[5]), .start(keys[6]), .coin(keys[7]), .start2(keys[8]),
+        .port0(test_port0), .port1(test_port1), .port2(test_port2)
+    );
+    reg [31:0] crc_vector;
+    integer digit;
+    initial begin
+        crc_vector = 32'hffffffff;
+        for (digit=49; digit<=57; digit++) crc_vector = host.crc_byte(crc_vector, 8'(digit));
+        if (~crc_vector !== 32'hcbf43926) $fatal(1, "CRC32 standard test vector");
+        #1; keys[4] = 1;
+        #1; if (test_port1 !== 8'hef || test_port2 !== 8'hef) $fatal(1, "Tapper fill");
+        test_timber = 1;
+        #1; if (test_port1 !== 8'hdf || test_port2 !== 8'hff) $fatal(1, "Timber axe right / P2 idle");
+        keys = 9'b000100000;
+        #1; if (test_port1 !== 8'hef) $fatal(1, "Timber axe left");
+        keys = 9'b111001111;
+        #1; if (test_port0 !== 8'hfa || test_port1 !== 8'hf0) $fatal(1, "Timber movement/start/coin");
+        test_focus = 0; test_service = 1;
+        #1; if (test_port0 !== 8'h7f || test_port1 !== 8'hff || test_port2 !== 8'hff)
+            $fatal(1, "Menu focus and service");
+        $display("INPUT/CRC PASS: both maps, inactive P2, focus, standard CRC32");
+    end
+
     reg memory_finished = 0, video_finished = 0, reset_finished = 0;
     reg reset_request = 1;
     wire board_reset;
@@ -127,6 +158,8 @@ module tb_platform;
             repeat (58) @(negedge clk);
         end
         command(16'h0301, 0, 'h3a000, 0);
+        if (!game_timber || host.rom_crc !== 32'hfb5f94cb)
+            $fatal(1, "ROM recognition or CRC mismatch");
         if (cleared != 2048 || bg_writes != 32768) $fatal(1, "Clear/background byte count");
         for (i=0; i<'he000; i=i+1)
             if (memory.main_rom[i] !== pattern(i)) $fatal(1, "Main ROM byte %h", i);
@@ -144,6 +177,8 @@ module tb_platform;
             write_word(32'h10040000+i, {pattern(i+3),pattern(i+2),pattern(i+1),pattern(i)});
         command(16'h0301, 1, 31, 1); // Reject wrong size.
         command(16'h0301, 1, 32, 0);
+        if (!game_timber || host.rom_crc !== 32'hfb5f94cb)
+            $fatal(1, "PROM load changed game recognition");
         for (i=0; i<32; i=i+1) if (prom[i] !== pattern(i)) $fatal(1, "PROM byte %0d", i);
         command(16'h0102, 0, 0, 0);
         command(16'h0100, 0, 0, 0);
@@ -165,6 +200,16 @@ module tb_platform;
         if (!core_reset) $fatal(1, "Halt did not reset core");
         write_word(32'h10050000, 32'h12345678); // Reject unmapped file writes.
         command(16'h0100, 0, 0, 1);
+        // New load clears the old identity; an unknown but correctly sized
+        // image must not start with the previous game's controls.
+        command(16'h0300, 0, 0, 0);
+        if (game_timber || host.rom_crc !== 0) $fatal(1, "Stale game identity");
+        for (i=0; i<'h3a000; i=i+4) begin
+            write_word(32'h10000000+i, 32'd0);
+            repeat (58) @(negedge clk);
+        end
+        command(16'h0301, 0, 'h3a000, 1);
+        command(16'h0102, 0, 0, 1);
         memory_finished = 1;
         $display("HOST/MEMORY PASS: full ROM routing, PROM, drain, errors, sprite deadlines");
     end
@@ -228,7 +273,7 @@ module tb_platform;
         $finish;
     end
     initial begin
-        #200000000;
+        #250000000;
         $fatal(1, "Global test timeout");
     end
 endmodule

@@ -1,7 +1,7 @@
 {
   "files": [
     {
-      "id": 0, "label": "Tapper ROM",
+      "id": 0, "label": "MCR3 ROM",
       "extensions": ["rom"], "user_selected": true,
       "optional": false, "read_only": true,
       "address": "0x10000000", "exact_size": "0x3A000"

@@ -399,3 +399,63 @@ The corrected rev 4 bitstream built successfully and meets routed timing:
 WNS +0.202 ns, WHS +0.037 ns. The local SD-card staging folder has been
 updated; the card is currently in the handheld, so it has not received
 this correction yet.
+
+### Automatic game recognition and private ZIP (2026-10-14)
+
+* The user requested choosing ordinary ROM files from one folder, with no
+  separate game-selection setting. The current build recognizes stock
+  Tapper (Budweiser 840127) and Timber MRA index-0 outputs by CRC32:
+  `0f584827` and `3f49e94e`. `gamedb/games.tsv` records CRCs, mod bytes,
+  DIP defaults, and MRA MD5s. These two entries are built into the host;
+  an external `gamedb.bin` remains future work as the supported list grows.
+* CRC is updated exactly once for each acknowledged ROM byte, in address
+  order, and checked after the posted-write queue drains. Wrong-size,
+  incomplete, out-of-order, and unrecognized images cannot become runnable.
+  The PROM cannot alter the recognized identity. Diagnostics expose the
+  CRC at `0x818` and recognition/mod bits at `0x81c`.
+* Timber uses upstream's bit-5/right-axe and bit-4/left-axe mapping: A and
+  B respectively. Its second joystick is idle, and R does not start an
+  uncontrollable second player. Tapper retains A fill and R start 2.
+  Both supported MRAs use DIP defaults FF 00. No user game selector exists.
+* The synthetic platform test checks the standard CRC32 known answer,
+  an independently calculated full-ROM CRC, identity stability across PROM
+  loading, rejected unknown images, both input maps and focus gating,
+  in addition to the existing reset/memory/video tests. All pass in Xsim.
+  Timber's actual ROM was built with `mra -A`, checked against the MRA MD5,
+  and auto-detected in Xsim, with ten complete startup frames captured.
+  This is startup validation, not a hardware gameplay claim.
+* `tools/prepare_mcr3.py --game tapper|timber` handles both local sets;
+  `prepare_tapper.py` remains a compatibility entry point.
+  `scripts/package.py --roms scratch/roms --zip build/MCR3_GameBub_Tapper_Timber_test.zip`
+  creates the requested private SD-card bundle, including the user's local
+  ROMs and PROM, installation notes, and checksums. It validates archive
+  contents byte-for-byte. No ROM data or ZIP is committed or published.
+
+### Candidate next architecture: the user's Tang merge
+
+Reviewed `alanswx/Arcade-MCR2-TangFPGA` at
+`60363fa2a2a5e50e07c48bfe084bb61e00b1d393` (read-only clone under scratch).
+The user asked whether it makes more sense than separate MiSTer-style cores.
+Recommendation: aim for one user-facing MCR core with ROM auto-detection;
+retain individual builds for debugging. The merged Tang top selects MCR1,
+MCR2, MCR3, and MCR3Scroll and shares ROM/scratch/video memories. MCR3Mono
+is parked separately under `future/`, so this is not yet every family.
+
+Reuse that board integration incrementally while keeping Game Bub's host,
+file browser, clocks, memory interfaces, video/audio adapters, and reset
+work. First candidate expansion is MCR2/Domino Man. Measure Vivado fit and
+timing with the Bub framebuffer before committing to one combined binary;
+Tang resource counts are not directly transferable. No Tang RTL has been
+imported and the current ZIP remains the two-game MCR3 baseline. Future
+imports still need source freshness checks and reconciliation with current
+MiSTer changes, as required above.
+
+The Tapper/Timber rev 4 build meets routed timing (WNS +0.134 ns,
+WHS +0.076 ns). The requested private ZIP was generated and each archived
+payload compared with its local source. It preserves existing settings;
+copy its cores/ and roms/ directories to the SD-card root.
+
+Tapper's matching actual-ROM Xsim regression also passed: mod 0,
+CRC 0f584827, ten complete startup frames. Both supported game identities
+have therefore been checked through the real host download path. Timber
+playability and automatic cold launch still await hardware confirmation.

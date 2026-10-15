@@ -9,6 +9,7 @@ import argparse
 from pathlib import Path
 import subprocess
 import sys
+import zlib
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -72,6 +73,12 @@ def main():
                else [str(work / "obj/Vtb_gamebub")])
     for name in ("rom", "prom", "out", "frames", "dump", "aspect", "coin", "start"):
         argument = f"{name}={getattr(args, name)}"
+        command += ["--testplusarg", argument] if args.backend == "xsim" else ["+" + argument]
+    checksum = zlib.crc32(args.rom.read_bytes())
+    known_games = {0x0f584827: 0, 0x3f49e94e: 1}
+    if checksum not in known_games:
+        p.error(f"Unsupported ROM CRC {checksum:08x}")
+    for argument in (f"expected_game={known_games[checksum]}", f"expected_crc={checksum:08x}"):
         command += ["--testplusarg", argument] if args.backend == "xsim" else ["+" + argument]
     output = run("game_run", command)
     print(output[-4000:])

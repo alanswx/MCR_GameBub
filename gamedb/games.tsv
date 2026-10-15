@@ -1,0 +1,4 @@
+# CRC32 of stock MRA index-0 output; current hardware lookup is in gb_mcr_host.sv.
+# crc32	mod	DIP defaults	name	MRA MD5
+0f584827	0	FF 00	Tapper (Budweiser, 840127)	7300967c61a0f1b887c12f3989e500bb
+3f49e94e	1	FF 00	Timber	87b3b4c330d79006b148d182885107b2
