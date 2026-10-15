@@ -366,3 +366,36 @@ that works in any modern browser:
   four-state reference. Both backends use the same host/SRAM/frame tests.
   Xsim captures show Tapper's startup patterns; both backends' frame 30
   matched byte-for-byte (black during startup).
+
+### Hardware startup correction (2026-10-14)
+
+The user tested the first SD-card build: the initial launch was black,
+then the firmware Reset action made the game work. The user confirmed
+that picture, controls, and sound all worked after Reset. The upstream
+`Arcade-MCR3.sv` reset wrapper explicitly runs the board for 65535 clocks
+and then pulses reset a second time. Our initial wrapper instead held
+reset for that entire interval, losing the second edge after the board
+had clocked.
+
+`gb_mcr_reset.sv` now reproduces upstream's registered reset and delayed
+one-cycle pulse for launch and manual Reset. The platform test checks the
+entire interval, pulse width, and absence of extra pulses on both paths.
+All platform regressions pass. This is a likely fix for the reported
+hardware behavior; a cold-launch hardware retest is still needed.
+
+The experimental GHDL/Verilator backend's earlier 300-frame run stayed
+black and failed its success check. Xsim produced different startup
+patterns at matching frame numbers. A black-frame match at frame 30 is
+therefore not evidence of backend equivalence. Use Xsim for validation
+until the conversion discrepancy is resolved.
+
+After the reset correction, both Xsim and the converted Verilator model
+passed a complete 10-frame startup test, and frame 10 matched byte for
+byte (the visible grid test pattern). Longer boot equivalence remains
+unverified. The platform reset test covers both cold launch and manual
+reset; hardware confirmation of automatic cold launch is still pending.
+
+The corrected rev 4 bitstream built successfully and meets routed timing:
+WNS +0.202 ns, WHS +0.037 ns. The local SD-card staging folder has been
+updated; the card is currently in the handheld, so it has not received
+this correction yet.

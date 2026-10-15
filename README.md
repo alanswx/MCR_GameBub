@@ -3,7 +3,8 @@
 Work in progress: the first target is **Tapper on Game Bub rev 4**, from
 Dar's MiSTer MCR3 core. Other MCR3 games and the MCR1/MCR2/MCR3 Mono boards
 are planned. See [the port plan](docs/PORT_PLAN.md) for scope and current
-validation. Hardware operation has not yet been verified.
+validation. The first hardware test ran Tapper after a manual Reset; the
+startup-reset correction still needs a cold-launch hardware test.
 
 The baseline uses the unmodified Game Bub framework, SRAM for sound and
 sprite ROMs, and 320×240 video with either 4:3 stretching or native-width
@@ -49,8 +50,9 @@ sandbox. For Xsim, `--compile-only` and `--run-only` separate compilation
 from simulation. A simulator exit code alone is insufficient: the runners
 also require their testbench success marker.
 
-For longer runs, add `--backend verilator` to use GHDL 4.1 conversion and
-Verilator 5.052. Xsim remains the reference for four-state VHDL behavior.
+The experimental `--backend verilator` uses GHDL 4.1 conversion and
+Verilator 5.052, but has shown boot differences from Xsim. Use Xsim for
+validation until that discrepancy is resolved.
 
 The bitstream is
 `build/MCR3-gamebub_rev4/MCR3-gamebub_rev4.bit`. No packaged release is

@@ -79,12 +79,12 @@ module mcr3_gamebub (
         .aspect(aspect), .volume(volume), .service(service), .dips(dips),
         .debug_status(debug_status)
     );
-    // Hold reset long enough to reset both CPUs and the audio divider.
-    reg [15:0] reset_count = 0;
-    always @(posedge clk_sys)
-        if (reset || core_reset || act_reset || !initialized) reset_count <= 16'hffff;
-        else if (reset_count != 0) reset_count <= reset_count - 1'b1;
-    wire machine_reset = reset || core_reset || !initialized || reset_count != 0;
+    wire machine_reset;
+    gb_mcr_reset reset_sequence (
+        .clk(clk_sys),
+        .request(reset || core_reset || act_reset || !initialized),
+        .machine_reset(machine_reset)
+    );
 
     wire [15:0] cpu_addr, dl_addr;
     wire [13:0] sound_addr;

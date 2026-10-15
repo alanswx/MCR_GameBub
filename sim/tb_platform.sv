@@ -93,7 +93,28 @@ module tb_platform;
         end
     endtask
 
-    reg memory_finished = 0, video_finished = 0;
+    reg memory_finished = 0, video_finished = 0, reset_finished = 0;
+    reg reset_request = 1;
+    wire board_reset;
+    gb_mcr_reset reset_sequence (.clk(clk), .request(reset_request), .machine_reset(board_reset));
+    integer reset_pass, reset_cycle;
+    initial begin
+        for (reset_pass=0; reset_pass<2; reset_pass++) begin
+            // Initial hold, then a later manual request, must each produce
+            // a free-running interval and exactly one delayed reset pulse.
+            reset_request = 1;
+            repeat (4) @(negedge clk);
+            if (!board_reset) $fatal(1, "Reset request not held");
+            reset_request = 0;
+            for (reset_cycle=1; reset_cycle<=65540; reset_cycle++) begin
+                @(negedge clk);
+                if (board_reset !== (reset_cycle == 65535))
+                    $fatal(1, "Reset sequence pass=%0d cycle=%0d", reset_pass, reset_cycle);
+            end
+        end
+        reset_finished = 1;
+        $display("RESET PASS: startup and manual restart match upstream double reset");
+    end
     integer i, phase, probe;
     initial begin
         repeat (8) @(negedge clk);
@@ -202,7 +223,7 @@ module tb_platform;
         $display("VIDEO PASS: 320x240, 4:3 and native width, pixels and blanking");
     end
     initial begin
-        wait (memory_finished && video_finished);
+        wait (memory_finished && video_finished && reset_finished);
         $display("PLATFORM PASS");
         $finish;
     end
