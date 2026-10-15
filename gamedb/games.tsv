@@ -1,6 +1,12 @@
-# CRC32 of stock MRA index-0 output; current hardware lookup is in gb_mcr_host.sv.
+# Generated from games.json by tools/generate_gamedb.py.
 # crc32	family	mod	DIP defaults	name	MRA MD5
-0f584827	MCR3	0	FF 00	Tapper (Budweiser, 840127)	7300967c61a0f1b887c12f3989e500bb
+1bbba959	MCR3	2	FF 00	Discs of Tron	e05333f8e3385387b336252269e64e45
+a1b44dd6	MCR3	3	FF 00	Journey	95d0859c7922308b094486d0d624c727
+0f584827	MCR3	0	FF 00	Tapper	7300967c61a0f1b887c12f3989e500bb
 3f49e94e	MCR3	1	FF 00	Timber	87b3b4c330d79006b148d182885107b2
 085cde56	MCR2	5	FF 00	Domino Man	112359d5a207884821f6df0f0c1c4d2c
-a2403144	MCR2	0	FF 00	Satan's Hollow (Set 1), rotate CW	cc2c7141ad992cffa1bd34ee74952152
+bc914fd7	MCR2	4	FF 00	Kozmik Krooz'r	0435ff192c0b93107af54d69d7eaf48f
+a2403144	MCR2	0	FF 00	Satan's Hollow	cc2c7141ad992cffa1bd34ee74952152
+d0cbcd68	MCR2	1	F8 00	Tron	8b232b334aa20263ab1c3a77796f8885
+38d75245	MCR2	2	FF 00	Two Tigers	fa00775a4b4c94b464bb402b3aa2c1be
+5317ce85	MCR2	3	FF 00	Wacko	157209d82b536114e346517818a89184

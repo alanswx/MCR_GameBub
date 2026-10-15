@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--zip", type=Path, help="write a private SD-card test ZIP")
-    parser.add_argument("--roms", type=Path, help="local folder with tapper.rom, timber.rom, domino.rom, shollow.rom, ssio.prom")
+    parser.add_argument("--roms", type=Path, help="local folder containing the catalog ROMs and ssio.prom")
     args = parser.parse_args()
     if bool(args.zip) != bool(args.roms):
         parser.error("Use --zip and --roms together for the private test bundle")
@@ -46,13 +46,13 @@ def main():
         return
     sources = [(stage / name, f"cores/{core_id}/{name}") for name in
                ("core.json", "files.json", "settings.json", bit_name)]
-    for name, checksum in (("tapper", 0x0f584827), ("timber", 0x3f49e94e), ("domino", 0x085cde56), ("shollow", 0xa2403144)):
-        path = args.roms / (name + ".rom")
+    games = json.loads((ROOT / "gamedb/games.json").read_text())
+    for game in games:
+        path = args.roms / (game["key"] + ".rom")
         data = path.read_bytes()
-        if len(data) != (0x1c000 if name in ("domino", "shollow") else 0x3a000) or zlib.crc32(data) != checksum:
-            raise SystemExit(f"Unexpected {name} ROM size/CRC")
-        label = "Satan's Hollow" if name == "shollow" else name.title()
-        sources.append((path, f"roms/MCR/{label}.rom"))
+        if len(data) != game["size"] or zlib.crc32(data) != int(game["crc32"], 16):
+            raise SystemExit(f"Unexpected {game['key']} ROM size/CRC")
+        sources.append((path, f"roms/MCR/{game['name']}.rom"))
     prom = args.roms / "ssio.prom"
     if hashlib.sha256(prom.read_bytes()).hexdigest() != "4962a47f67ce0cebc655026efed495eb17fc29e7072650ecab2cecc4f16c06dc":
         raise SystemExit("Unexpected SSIO timing PROM")
@@ -63,7 +63,7 @@ Extract this ZIP at the root of your Game Bub SD card. Merge cores/ and
 roms/ with the existing folders. Launch Bally Midway MCR (alanswx.MCR).
 This installs beside the proven Bally Midway MCR3 core (alanswx.MCR3).
 
-Choose Tapper.rom, Timber.rom, Domino.rom, or Satan's Hollow.rom in roms/MCR.
+Choose any of the ten game ROMs in roms/MCR.
 ROM recognition selects MCR2 or MCR3 and the controls automatically.
 The required sound PROM is already in the core folder.
 
@@ -78,7 +78,17 @@ Hold sideways (CCW): turn counterclockwise, joypad at bottom; Up/Down move left/
 The firmware menu keeps its normal orientation. Allow a few seconds for
 Satan's Hollow's startup memory/color tests and delayed restart.
 Picture defaults to 4:3. Startup double-reset correction is included.
-Version 0.3.2 adds the opposite sideways grip, using no extra image RAM.
+Version 0.4.0 adds all ten official MCR2/MCR3 MRA game sets.
+Tron: D-pad move, A fire, L/R spinner. Start+R starts player 2.
+Two Tigers (Tron Conversion): Left/Right turn, A shoot, B bomb, X dogfight.
+L/R also turn; Start+R starts player 2. Player 2's controls are inactive.
+Wacko: D-pad trackball, A right/B down/X up/Y left to shoot.
+Kozmik Krooz'r: D-pad ship, A fire, B shield, L/R turret; Start+R starts P2.
+Discs of Tron: D-pad move, A toss, B deflect, X/Y aim up/down, L/R rotate.
+Start+R starts player 2 in Discs of Tron.
+Journey: D-pad move, A fire, R start player 2. Normal sound is included;
+the separate Separate Ways music sample is not implemented yet.
+Portrait settings apply to Satan's Hollow, Tron and Journey.
 It retains MCR2's corrected 18-source-pixel horizontal capture delay
 and restores the MCR2 one-second delayed restart.
 
@@ -86,7 +96,7 @@ Tapper, Timber, and Domino Man worked in the previous hardware-confirmed build.
 The previous portrait picture looks good on device; the new CCW grip needs testing.
 It uses a local, optional framework rotation change; it is a private test.
 High scores are not saved. MCR1, scrolling games, and MCR3 Mono are not
-included yet. Other ROM revisions are not recognized.
+included yet. New games need hardware gameplay checks. Other ROM revisions are not recognized.
 
 This private test bundle includes your local ROM data. Do not publish it.
 """

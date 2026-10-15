@@ -1,0 +1,122 @@
+[
+  {
+    "key": "dotron",
+    "name": "Discs of Tron",
+    "family": 3,
+    "mod": 2,
+    "mra": "Discs of Tron.mra",
+    "md5": "e05333f8e3385387b336252269e64e45",
+    "size": 237568,
+    "portrait": false,
+    "dips": 255,
+    "crc32": "1bbba959"
+  },
+  {
+    "key": "journey",
+    "name": "Journey",
+    "family": 3,
+    "mod": 3,
+    "mra": "Journey.mra",
+    "md5": "95d0859c7922308b094486d0d624c727",
+    "size": 237568,
+    "portrait": true,
+    "dips": 255,
+    "crc32": "a1b44dd6"
+  },
+  {
+    "key": "tapper",
+    "name": "Tapper",
+    "family": 3,
+    "mod": 0,
+    "mra": "Tapper (Budweiser, 840127).mra",
+    "md5": "7300967c61a0f1b887c12f3989e500bb",
+    "size": 237568,
+    "portrait": false,
+    "dips": 255,
+    "crc32": "0f584827"
+  },
+  {
+    "key": "timber",
+    "name": "Timber",
+    "family": 3,
+    "mod": 1,
+    "mra": "Timber.mra",
+    "md5": "87b3b4c330d79006b148d182885107b2",
+    "size": 237568,
+    "portrait": false,
+    "dips": 255,
+    "crc32": "3f49e94e"
+  },
+  {
+    "key": "domino",
+    "name": "Domino Man",
+    "family": 2,
+    "mod": 5,
+    "mra": "Domino Man.mra",
+    "md5": "112359d5a207884821f6df0f0c1c4d2c",
+    "size": 114688,
+    "portrait": false,
+    "dips": 255,
+    "crc32": "085cde56"
+  },
+  {
+    "key": "kroozr",
+    "name": "Kozmik Krooz'r",
+    "family": 2,
+    "mod": 4,
+    "mra": "Kozmik Krooz'r.mra",
+    "md5": "0435ff192c0b93107af54d69d7eaf48f",
+    "size": 114688,
+    "portrait": false,
+    "dips": 255,
+    "crc32": "bc914fd7"
+  },
+  {
+    "key": "shollow",
+    "name": "Satan's Hollow",
+    "family": 2,
+    "mod": 0,
+    "mra": "Satan's Hollow (Set 1).mra",
+    "md5": "cc2c7141ad992cffa1bd34ee74952152",
+    "size": 114688,
+    "portrait": true,
+    "dips": 255,
+    "crc32": "a2403144"
+  },
+  {
+    "key": "tron",
+    "name": "Tron",
+    "family": 2,
+    "mod": 1,
+    "mra": "Tron.mra",
+    "md5": "8b232b334aa20263ab1c3a77796f8885",
+    "size": 114688,
+    "portrait": true,
+    "dips": 248,
+    "crc32": "d0cbcd68"
+  },
+  {
+    "key": "twotiger",
+    "name": "Two Tigers",
+    "family": 2,
+    "mod": 2,
+    "mra": "Two Tigers (Tron Conversion).mra",
+    "md5": "fa00775a4b4c94b464bb402b3aa2c1be",
+    "size": 114688,
+    "portrait": false,
+    "dips": 255,
+    "crc32": "38d75245"
+  },
+  {
+    "key": "wacko",
+    "name": "Wacko",
+    "family": 2,
+    "mod": 3,
+    "mra": "Wacko.mra",
+    "md5": "157209d82b536114e346517818a89184",
+    "size": 114688,
+    "portrait": false,
+    "dips": 255,
+    "crc32": "5317ce85"
+  }
+]

@@ -1,42 +1,52 @@
 # Bally Midway MCR for Game Bub
 
 Work in progress: **one combined MCR2/MCR3 core on Game Bub rev 4**,
-supporting Tapper, Timber, Domino Man, and Satan's Hollow (Set 1). It uses Dar's current MiSTer board
-engines and the Tang port's MCR2 full-height video adjustment, while
-retaining MiSTer's 18-pixel horizontal pipeline compensation. Choose a
-`.rom` from the file browser; CRC32 recognition
-selects the correct controls automatically. Supported files are the stock
-MRAs' index-0 outputs listed in [gamedb/games.tsv](gamedb/games.tsv).
-Unknown or damaged images are rejected instead of using the wrong controls.
+with all ten official MRA game sets configured. Choose a `.rom` from the
+file browser; CRC32 recognition selects the board, controls, DIP defaults
+and portrait orientation automatically. Stock MRA index-0 outputs are
+listed in [the game catalog](gamedb/games.tsv); [games.json](gamedb/games.json)
+is the source for the hardware decoder and preparation/package tools.
+Unknown or damaged images are rejected.
 
-Tapper, Timber, and Domino Man are hardware-confirmed to run in the combined core.
-Version 0.2.1's corrected Domino Man alignment is also hardware-confirmed;
-Tapper and Timber continue to look correct. Automatic ROM recognition and the
-double-reset startup fix are retained. See the
-[port plan](docs/PORT_PLAN.md) for validation details.
+Tapper, Timber, Domino Man, and Satan's Hollow are hardware-confirmed.
+Both sideways directions and upright portrait video work on the device;
+the sideways grip remains awkward. Rotation is complete for now.
+Version 0.4.0 enables six more games, which need device gameplay checks.
+It retains the corrected Domino Man alignment and startup reset sequence.
 
-All three games use D-pad movement, Select for coin, and Start for player 1.
-Tapper uses A to fill and R for player 2 start. Timber uses A for axe right
-and B for axe left; its second joystick is inactive in this build.
-Domino Man uses A to swat and R for player 2 start.
-Satan's Hollow uses Left/Right, A fire, and B shield. **Portrait games**
-defaults to **Upright**, a 360x480 picture with side borders when holding the
-Bub normally. **Hold sideways (CW)** fills the landscape game area; turn the
-Bub clockwise and use Down/Up for screen left/right. **Hold sideways (CCW)**
-turns the picture the other way: turn the Bub counterclockwise, with the
-joypad at the bottom, and use Up/Down for screen left/right. Neither sideways
-option uses additional image RAM. The menu retains its normal orientation.
-The previous portrait build looks good on the device; the new CCW grip
-needs a hardware check. Allow a few
-seconds for Satan's Hollow's startup memory/color tests and delayed restart.
+Select inserts a coin; Start starts player 1. Controls are:
 
-High scores are not yet saved. MCR1, MCR3Scroll, and MCR3 Mono are not yet
-integrated.
+| Game | Handheld controls |
+|---|---|
+| Tapper | D-pad move, A fill, R start player 2 |
+| Timber | D-pad move, A axe right, B axe left; player 1 only |
+| Domino Man | D-pad move, A swat, R start player 2 |
+| Satan's Hollow | Left/Right move, A fire, B shield, R start player 2 |
+| Tron | D-pad move, A fire, L/R spinner |
+| Two Tigers (Tron Conversion) | Left/Right or L/R turn, A shoot, B bomb, X dogfight; player 1 controls only |
+| Wacko | D-pad trackball; A zap right, B down, X up, Y left; R start player 2 |
+| Kozmik Krooz'r | D-pad ship, A fire, B shield, L/R turret |
+| Discs of Tron | D-pad move, A toss, B deflect, X/Y aim up/down, L/R rotate |
+| Journey | D-pad move, A fire, R start player 2 |
 
-The confirmed 0.2.1 baseline uses the unmodified framework. The 0.3.2 test
-branch adds an optional frame-buffer read transform with no extra image RAM.
-See [the framework design](docs/FRAMEWORK_CHANGES.md). Both use SRAM for sound and sprite ROMs,
-and 320×240 video with either 4:3 stretching or native-width black borders.
+Tron, Two Tigers, Kozmik Krooz'r and Discs of Tron use **Start+R** for
+player 2 start, leaving R available for rotation during play. Spinner and
+trackball buttons are substitutes for the arcade controls. Journey has its
+normal SSIO sound; its separate *Separate Ways* music sample is not yet
+implemented. High scores are not saved. MCR1, MCR3Scroll and MCR3 Mono
+are separate board integrations still to come.
+
+**Portrait games** applies to Satan's Hollow, Tron and Journey. **Upright**
+is the default: normal grip and a 360x480 picture with side borders.
+**Hold sideways (CW)** fills the landscape game area; turn the Bub clockwise.
+**Hold sideways (CCW)** turns it the other way, with the joypad at the bottom.
+D-pad directions follow the grip; the firmware menu keeps its normal
+orientation. Allow a few seconds for startup memory/color tests and reset.
+
+The confirmed 0.2.1 baseline uses the unmodified framework. This branch
+adds an optional framebuffer read transform with no extra image RAM.
+See [the framework design](docs/FRAMEWORK_CHANGES.md). The core uses SRAM
+for sound and sprite ROMs, and 320×240 video with 4:3 or native-width display.
 
 ## Local ROM preparation
 
@@ -50,10 +60,10 @@ python3 tools/prepare_mcr3.py --game tapper \
   --prom-vhdl ../Arcade-MCR3_MiSTer/rtl/midssio_82s123.vhd
 ```
 
-Repeat with `--game timber --zip /path/to/timber.zip` for Timber or
-`--game domino --zip /path/to/domino.zip` for Domino Man. Domino Man also
-requires the sibling `Arcade-MCR2_MiSTer` source clone. Use
-`--game shollow --zip /path/to/shollow.zip` for Satan's Hollow.
+Repeat with `--game` set to `timber`, `domino`, `shollow`, `tron`,
+`twotiger`, `wacko`, `kroozr`, `dotron` or `journey`, supplying that game's
+local zip. The MCR2 games need the sibling `Arcade-MCR2_MiSTer` clone too.
+Two Tigers uses the **Tron Conversion** set from the merged `twotiger.zip`.
 This runs `mra -A` on the selected upstream MRA, checks the assembled ROM's
 size and MD5, and writes the selected `.rom` and `ssio.prom` under `scratch/roms`.
 Alternatively pass `--prom /path/to/ssio.prom` for an existing 32-byte
@@ -66,6 +76,7 @@ be loaded for sound to function. These files stay out of Git.
 source scripts/env.sh
 python3 scripts/import_mcr.py --check
 python3 scripts/import_mcr2.py --check
+python3 tools/generate_gamedb.py --check
 scripts/lint.sh --test
 python3 scripts/check_rotation.py --defaults
 python3 sim/run_tb.py --frames 120 --dump 30
@@ -105,13 +116,14 @@ available yet. Once the build passes routed timing, stage a local hardware
 test with `python3 scripts/package.py`. Copy `build/sdcard/cores/alanswx.MCR`
 to your SD card's `cores/` folder (beside the original MCR3 core), put your
 `ssio.prom` inside it, and launch **Bally Midway MCR**. Choose
-`Tapper.rom`, `Timber.rom`, `Domino.rom`, or `Satan's Hollow.rom` when launching the core.
+any ROM from `roms/MCR` when launching the core. The private ZIP includes
+all ten configured game sets, a controls guide and the required SSIO PROM.
 
 For a private SD-card ZIP containing your local ROMs and PROM:
 
 ```sh
 python3 scripts/package.py --roms scratch/roms \
-  --zip build/MCR_GameBub_portrait_v0.3.2.zip
+  --zip build/MCR_GameBub_games_v0.4.0.zip
 ```
 
 The ZIP includes only this core, four ROMs, the PROM, installation notes,
@@ -120,3 +132,11 @@ It contains local ROM data and is not a public release.
 
 Upstream licence notices are retained; publication and the
 repository licence remain to be settled with the owner.
+
+For a catalog identity/DIP/orientation check using the experimental fast model:
+
+```sh
+python3 sim/run_tb.py --backend verilator --compile-only
+python3 sim/check_games.py
+# Add --frames 90 to smoke-test startup; this is not an Xsim/audio validation.
+```

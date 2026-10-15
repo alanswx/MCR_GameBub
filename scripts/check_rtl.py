@@ -11,6 +11,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--test", action="store_true")
     args = parser.parse_args()
+    subprocess.run(["python3", str(ROOT / "tools/generate_gamedb.py"), "--check"], check=True)
     work = ROOT / "build/check"
     work.mkdir(parents=True, exist_ok=True)
 
@@ -44,6 +45,11 @@ def main():
         run("inputs_run", ["xsim", "mcr2_inputs_test", "--runall"])
         if "MCR2 INPUT PASS" not in (work / "inputs_run.log").read_text():
             raise SystemExit("MCR2 input test failed")
+        run("controls_compile", ["xvlog", "--sv", str(ROOT / "sim/tb_mcr_controls.sv")])
+        run("controls_elaborate", ["xelab", "--timescale", "1ns/1ps", "work.tb_mcr_controls", "-s", "mcr_controls_test"])
+        run("controls_run", ["xsim", "mcr_controls_test", "--runall"])
+        if "MCR CONTROLS PASS" not in (work / "controls_run.log").read_text():
+            raise SystemExit("MCR control test failed")
         run("family_reset_build", ["verilator", "--binary", "--timing", "-j", "8", "-O3",
             "-Wno-fatal", "-Wno-lint", "-Wno-style", "--top-module", "tb_reset_families",
             "--Mdir", str(work / "reset_obj"), str(ROOT / "rtl/gamebub/gb_mcr_reset.sv"),

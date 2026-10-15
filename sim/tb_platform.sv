@@ -14,7 +14,8 @@ module tb_platform;
     wire [7:0] wr_data, dips;
     wire [1:0] volume;
     wire [31:0] debug_status;
-    wire game_timber, game_shollow;
+    wire game_timber, game_shollow, game_portrait;
+    wire [2:0] game_mod;
     wire [1:0] portrait_mode;
     // zlib CRC of pattern(0..0x39fff), independent of the RTL CRC function.
     gb_mcr_host #(.TIMBER_CRC32(32'hfb5f94cb), .DOMINO_CRC32(32'h85004ba5)) host (.*);

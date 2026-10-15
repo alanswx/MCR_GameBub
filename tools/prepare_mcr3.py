@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Build local Tapper, Timber, or Domino Man test files with mra-tools-c; never downloads ROM data.
+"""Build local MCR2/MCR3 game files with mra-tools-c; never downloads ROM data.
 
 The timing PROM comes from a user-supplied binary or the locally cloned
 upstream VHDL initializer, which is deliberately omitted from imported RTL.
 """
 import argparse
 import hashlib
+import json
 from pathlib import Path
 import re
 import shutil
@@ -17,7 +18,8 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--game", choices=("tapper", "timber", "domino", "shollow"), default="tapper")
+    games = {g["key"]: g for g in json.loads((ROOT / "gamedb/games.json").read_text())}
+    p.add_argument("--game", choices=tuple(games), default="tapper")
     p.add_argument("--zip", type=Path, required=True, help="local MAME zip")
     p.add_argument("--mra-tool", type=Path, default=ROOT.parent / "mra-tools-c/mra")
     p.add_argument("--mra", type=Path, default=None)
@@ -26,9 +28,9 @@ def main():
     prom.add_argument("--prom-vhdl", type=Path, help="local upstream midssio_82s123.vhd")
     p.add_argument("--out", type=Path, default=ROOT / "scratch/roms")
     args = p.parse_args()
+    game = games[args.game]
     if args.mra is None:
-        name = {"tapper": "Tapper (Budweiser, 840127).mra", "timber": "Timber.mra", "domino": "Domino Man.mra", "shollow": "Satan's Hollow (Set 1).mra"}[args.game]
-        args.mra = ROOT.parent / ("Arcade-MCR2_MiSTer/releases" if args.game in ("domino", "shollow") else "Arcade-MCR3_MiSTer/releases") / name
+        args.mra = ROOT.parent / f"Arcade-MCR{game['family']}_MiSTer/releases" / game["mra"]
     if args.prom:
         data = args.prom.read_bytes()
     else:
@@ -39,7 +41,8 @@ def main():
         data = bytes(int(v, 16) for v in re.findall(r'X"([0-9a-f]{2})"', match[1], re.I))
     if len(data) != 32:
         p.error("SSIO PROM must contain exactly 32 bytes")
-    rom = ET.parse(args.mra).find("rom[@index='0']")
+    description = ET.parse(args.mra)
+    rom = description.find("rom[@index='0']")
     if rom is None or rom.get("zip") != args.game + ".zip":
         p.error("MRA does not match the selected game")
     args.out.mkdir(parents=True, exist_ok=True)
@@ -50,8 +53,11 @@ def main():
         shutil.copyfile(args.mra, stage / "game.mra")
         (stage / (args.game + ".zip")).symlink_to(args.zip.resolve(strict=True))
         subprocess.run([str(args.mra_tool.resolve()), "-A", "game.mra"], cwd=stage, check=True)
-        result = (stage / (args.game + ".rom")).read_bytes()
-        if len(result) != (0x1c000 if args.game in ("domino", "shollow") else 0x3a000) or hashlib.md5(result).hexdigest() != rom.get("md5"):
+        assembled = list(stage.glob("*.rom"))
+        if len(assembled) != 1:
+            p.error("MRA tool did not produce exactly one ROM")
+        result = assembled[0].read_bytes()
+        if len(result) != game["size"] or hashlib.md5(result).hexdigest() != rom.get("md5"):
             p.error("Assembled ROM size or MRA MD5 mismatch")
         (args.out / (args.game + ".rom")).write_bytes(result)
     (args.out / "ssio.prom").write_bytes(data)
