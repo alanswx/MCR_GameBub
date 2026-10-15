@@ -160,6 +160,14 @@ module tb_platform;
         repeat (8) @(negedge clk);
         reset = 0;
         command(16'h0100, 0, 0, 1); // Cannot run before required files.
+        if (aspect !== 1) $fatal(1, "Auto picture should stretch MCR3");
+        write_word(32'h200,0); if(aspect!==0)$fatal(1,"Native picture setting");
+        write_word(32'h200,1); if(aspect!==1)$fatal(1,"4:3 picture setting");
+        write_word(32'h200,2); if(aspect!==1)$fatal(1,"Auto picture setting");
+        force host.game_family=0; #1; if(aspect!==0)$fatal(1,"MCR1 Auto picture setting");
+        write_word(32'h200,1); if(aspect!==1)$fatal(1,"MCR1 manual stretch override");
+        write_word(32'h200,2); if(aspect!==0)$fatal(1,"MCR1 Auto restore");
+        release host.game_family;
         if (portrait_mode !== 0) $fatal(1, "Wrong portrait default");
         write_word(32'h210, 1);
         if (portrait_mode !== 1) $fatal(1, "Portrait setting write");

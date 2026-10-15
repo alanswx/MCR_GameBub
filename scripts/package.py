@@ -77,7 +77,10 @@ Hold sideways (CW): turn the Bub clockwise; Down/Up become screen left/right.
 Hold sideways (CCW): turn counterclockwise, joypad at bottom; Up/Down move left/right.
 The firmware menu keeps its normal orientation. Allow a few seconds for
 Satan's Hollow's startup memory/color tests and delayed restart.
-Picture defaults to 4:3. Startup double-reset correction is included.
+Picture defaults to Auto: native width for MCR1's nearly square picture,
+4:3 for the other boards. Manual overrides remain available.
+If an older picture override was saved, choose Picture -> Auto once.
+Startup double-reset correction is included.
 Version 0.5.0 configures 18 games across MCR1, MCR2, MCR3 and MCR3 Mono.
 Tron: D-pad move, A fire, L/R spinner. Start+R starts player 2.
 Two Tigers (Tron Conversion): Left/Right turn, A shoot, B bomb, X dogfight.

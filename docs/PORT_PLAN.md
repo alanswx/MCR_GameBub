@@ -805,3 +805,28 @@ in generated simulation code because Verilator rejects mixed continuous
 and clocked drivers on distinct members of an unpacked struct. Production
 RTL keeps the upstream struct representation.
 Startup/capture checks and routed resource/timing checks are in progress.
+
+
+The first four-family synthesis fits at 127/135 BRAM tiles and 23,493 LUTs
+(37%). The current SG MRA sets need only 128 KiB sound, leaving 128 KiB
+external SRAM free. A Picture Auto option is being finalized: MCR1 uses
+native width to preserve its nearly square original image, while the
+other families keep 4:3. Existing manual values 0/1 retain their meanings.
+The firmware may retain a previous manual setting; selecting Auto once
+activates the family default. The testbench ROM buffer is widened to
+512 KiB plus a guard byte. The fast backend disables unique-case assertions
+that otherwise fire at time zero inside the held-reset FX68K; testbench
+fatal checks remain enabled. This does not establish audio equivalence.
+
+
+The final 18-game loading/identity sweep passes: board and early layout,
+full CRC/size, DIP defaults, SG selection and all three grip requests
+(`build/four-families-identities-final.log`). The complete mixed-language
+suite passes with Picture Auto, and the focused host test additionally
+passes MCR1 automatic aspect and both manual override/restore checks.
+The strengthened memory test switches to fresh addresses in every read
+phase and still meets all eight-clock deadlines. These checks use Xsim
+for platform/control/memory behavior and the experimental fast model for
+catalog loading. New-board CPU startup and the four-state Rampage sound
+reference are still in progress. The first routed candidate predates
+Picture Auto; rebuild from the final source commit before packaging.

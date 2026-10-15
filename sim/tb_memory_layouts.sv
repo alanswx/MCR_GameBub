@@ -46,7 +46,10 @@ module tb_memory_layouts;
                     write_byte(sound_base+2*probe,8'h80+8'(probe));
                     write_byte(sound_base+2*probe+1,8'h90+8'(probe));
                 end
-                for(phase=0;phase<3;phase++)begin
+            end
+            for(phase=0;phase<3;phase++)begin
+                for(probe=0;probe<4;probe++)begin
+                    case(probe)0:address=0;1:address='h1234;2:address=sg ? 'h8000 : 'h4000;3:address=sg ? 'hffff : 'h7fff;endcase
                     repeat(phase+1)@(negedge clk);
                     sprite_addr=address;sound_addr=sg ? {address,1'b0} : 2*probe;
                     repeat(8)@(negedge clk);

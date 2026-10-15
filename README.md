@@ -55,7 +55,9 @@ orientation. Allow a few seconds for startup memory/color tests and reset.
 The confirmed 0.2.1 baseline uses the unmodified framework. This branch
 adds an optional framebuffer read transform with no extra image RAM.
 See [the framework design](docs/FRAMEWORK_CHANGES.md). The core uses SRAM
-for sound and sprite ROMs, and 320×240 video with 4:3 or native-width display.
+for sound and sprite ROMs, and 320×240 video. **Picture → Auto** preserves
+MCR1's nearly square original picture and uses 4:3 for the other boards.
+Manual 4:3 and native-width overrides remain available.
 
 ## Local ROM preparation
 

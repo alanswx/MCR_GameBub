@@ -12,8 +12,12 @@
       "label": "Picture",
       "address": "0x200",
       "type": "list",
-      "default": "0x1",
+      "default": "0x2",
       "items": [
+        {
+          "label": "Auto",
+          "value": "0x2"
+        },
         {
           "label": "4:3",
           "value": "0x1"

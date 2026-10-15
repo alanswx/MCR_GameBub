@@ -15,6 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--games', nargs='+')
+    p.add_argument('--out', type=Path, help='separate output folder for this validation run')
     p.add_argument('--frames', type=int, default=0, help='zero checks identity only; positive runs startup frames')
     p.add_argument('--jobs', type=int, default=4)
     args = p.parse_args()
@@ -27,6 +28,7 @@ def main():
     binary = ROOT / 'build/fast/obj/Vtb_gamebub'
     if not binary.is_file(): p.error('Compile the fast model first')
     folder = ROOT / 'scratch/catalog-startup' if args.frames else ROOT / 'scratch/catalog-identity'
+    if args.out: folder = (ROOT / args.out).resolve()
     folder.mkdir(parents=True,exist_ok=True)
     def check(game):
         out = folder / game['key']; out.mkdir(exist_ok=True)

@@ -53,6 +53,6 @@ def build(work, run):
     fx68k.write_text((ROOT / "rtl/mcr3mono/fx68k.sv").read_text().replace("typedef struct {", "typedef struct packed {"))
     sv = sorted(str(p) for p in (ROOT / "rtl/gamebub").glob("*.sv") if p.name != "gb_clocks.sv")
     run("verilator_build", ["verilator", "--binary", "--timing", "-j", "8", "-O3",
-        "-Wno-fatal", "-Wno-lint", "-Wno-style", "-Wno-TIMESCALEMOD", "+1364-2005ext+v",
+        "--no-assert-case", "-Wno-fatal", "-Wno-lint", "-Wno-style", "-Wno-TIMESCALEMOD", "+1364-2005ext+v",
         "--top-module", "tb_gamebub", "--Mdir", str(work / "obj"), "-o", "Vtb_gamebub",
         str(generated), str(fx68k), *sv, str(ROOT / "sim/gb_clocks.sv"), str(ROOT / "sim/tb_gamebub.sv")])

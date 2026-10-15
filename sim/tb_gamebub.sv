@@ -109,7 +109,7 @@ module tb_gamebub;
     endtask
     task automatic load_file(input string path, input integer id, address, size);
         integer fd, count, i;
-        reg [7:0] data [0:237568]; // Extra byte detects an oversized input.
+        reg [7:0] data [0:524288]; // Extra byte detects an oversized input.
         begin
             fd = $fopen(path, "rb");
             if (!fd) $fatal(1, "Cannot open %s", path);
@@ -127,7 +127,7 @@ module tb_gamebub;
         end
     endtask
     string rom_path, prom_path, out_path;
-    integer frames = 120, dump = 30, aspect = 1;
+    integer frames = 120, dump = 30, aspect = 2;
     integer expected_game = 0, expected_family = 2, portrait_mode = 0;
     integer orientation_probe, expected_portrait=0, expected_dips=255, expected_size=237568, expected_sg=0;
     reg [31:0] expected_crc;
@@ -160,6 +160,8 @@ module tb_gamebub;
             $fatal(1, "Automatic ROM recognition failed: game=%b CRC=%h", dut.game_timber, dut.host.rom_crc);
         $display("GAME IDENTIFIED: mod=%0d CRC=%h", expected_game, expected_crc);
         write_word('h200, aspect);
+        if(dut.aspect !== (aspect == 0 || (aspect == 2 && expected_family == 0) ? 1'b0 : 1'b1))
+            $fatal(1,"Wrong automatic game aspect");
         for (orientation_probe=0; orientation_probe<3; orientation_probe=orientation_probe+1) begin
             write_word('h210, orientation_probe);
             if (dut.videoTransform_rotation !== ((expected_portrait != 0) ?
@@ -177,7 +179,7 @@ module tb_gamebub;
         running = 1;
     end
     reg [8:0] frame [0:76799];
-    integer unknown_pixels = 0;
+    integer unknown_pixels = 0, audio_unknown_cycles = 0;
     integer x = 0, y = 0, number = 0, colored = 0, audio_changes = 0;
     bit defined_visible_frame = 0;
     reg vb_q = 1;
@@ -199,6 +201,7 @@ module tb_gamebub;
             x=0; y=0; colored=0; unknown_pixels=0; vb_q=1;
         end else if (running) begin
             vb_q <= v_vblank;
+            if(number > 1 && $isunknown({a_left,a_right})) audio_unknown_cycles++;
             if (a_left !== audio_q) audio_changes++;
             audio_q = a_left;
             if (v_de) begin
@@ -230,6 +233,7 @@ module tb_gamebub;
                 btn[10] = number >= coin_frame && number < coin_frame+6 && coin_frame >= 0;
                 btn[11] = number >= start_frame && number < start_frame+6 && start_frame >= 0;
                 if (number == frames) begin
+                    if(audio_unknown_cycles != 0) $fatal(1,"Undefined audio after startup: %0d cycles",audio_unknown_cycles);
                     if (unknown_pixels != 0) $fatal(1, "Final frame has %0d unknown pixels", unknown_pixels);
                     if (!defined_visible_frame) $fatal(1, "No fully defined visible frame during startup");
                     $display("GAMEBUB PASS: %0d complete frames",number);

@@ -27,7 +27,7 @@ def main():
     p.add_argument("--frames", type=int, default=120)
     p.add_argument("--dump", type=int, default=30)
     p.add_argument("--portrait-mode", "--portrait-sideways", dest="portrait_mode", type=int, choices=(0, 1, 2), default=0)
-    p.add_argument("--aspect", type=int, choices=(0, 1), default=1)
+    p.add_argument("--aspect", type=int, choices=(0, 1, 2), default=2)
     p.add_argument("--coin", type=int, default=-1)
     p.add_argument("--start", type=int, default=-1)
     mode = p.add_mutually_exclusive_group()

@@ -23,7 +23,7 @@ module gb_mcr_host #(
     input wire wr_ack, wr_error,
     output wire core_reset,
     output reg act_reset, focus,
-    output reg aspect,
+    output wire aspect,
     output reg [1:0] volume,
     output reg service,
     output reg [7:0] dips,
@@ -39,6 +39,9 @@ module gb_mcr_host #(
     reg [31:0] command [0:7];
     reg [1:0] command_state;
     reg setup_done, run;
+    reg [1:0] picture_mode;
+    // MCR1's original picture is nearly square; the other boards use 4:3.
+    assign aspect = picture_mode == 2 ? game_family != 0 : picture_mode[0];
     reg [1:0] present;
     reg load_error;
     reg [31:0] crc_state;
@@ -115,7 +118,7 @@ module gb_mcr_host #(
             rom_loading <= 0; game_timber <= 0; game_mcr2 <= 0; game_shollow <= 0; game_mod <= 0; game_portrait <= 0; game_sg <= 0;
             game_family <= 2; load_family <= 2; load_sg <= 0;
             portrait_mode <= 0;
-            aspect <= 1; volume <= 0; service <= 0; dips <= 8'hff;
+            picture_mode <= 2; volume <= 0; service <= 0; dips <= 8'hff;
             for (i=0; i<8; i=i+1) command[i] <= 0;
             for (i=0; i<2; i=i+1) file_size[i] <= 0;
         end else begin
@@ -130,7 +133,7 @@ module gb_mcr_host #(
                         if (is_command) command[mem_address[4:2]] <= mem_dataWrite;
                         else if (is_local) case (mem_address[11:0])
                             12'h100: if (!core_reset && mem_dataWrite != 0) act_reset <= 1;
-                            12'h200: aspect <= mem_dataWrite[0];
+                            12'h200: picture_mode <= mem_dataWrite[1:0] == 3 ? 2'd2 : mem_dataWrite[1:0];
                             12'h204: volume <= mem_dataWrite[1:0];
                             12'h208: service <= mem_dataWrite[0];
                             12'h20c: dips <= mem_dataWrite[7:0];
@@ -141,7 +144,7 @@ module gb_mcr_host #(
                         mem_dataRead <= 0;
                         if (is_command) mem_dataRead <= command[mem_address[4:2]];
                         else if (is_local) case (mem_address[11:0])
-                            12'h200: mem_dataRead <= {31'd0, aspect};
+                            12'h200: mem_dataRead <= {30'd0, picture_mode};
                             12'h204: mem_dataRead <= {30'd0, volume};
                             12'h208: mem_dataRead <= {31'd0, service};
                             12'h20c: mem_dataRead <= {24'd0, dips};
