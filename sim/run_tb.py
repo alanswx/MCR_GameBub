@@ -17,6 +17,7 @@ from check_rtl import main as check_rtl
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument("--backend", choices=("xsim", "verilator"), default="xsim")
     p.add_argument("--rom", type=Path, default=Path("scratch/roms/tapper.rom"))
     p.add_argument("--prom", type=Path, default=Path("scratch/roms/ssio.prom"))
     p.add_argument("--out", type=Path, default=Path("scratch/tapper-frames"))
@@ -31,7 +32,7 @@ def main():
     args = p.parse_args()
     if args.frames < 1 or args.dump < 1:
         p.error("frames and dump must be positive")
-    work = ROOT / "build/check"
+    work = ROOT / ("build/check" if args.backend == "xsim" else "build/fast")
     work.mkdir(parents=True, exist_ok=True)
 
     def run(name, command):
@@ -44,7 +45,10 @@ def main():
         print(f"{name}: {log}", flush=True)
         return log.read_text()
 
-    if not args.run_only:
+    if not args.run_only and args.backend == "verilator":
+        from fast_backend import build
+        build(work, run)
+    if not args.run_only and args.backend == "xsim":
         saved = sys.argv
         try:
             sys.argv = [saved[0]]
@@ -64,9 +68,11 @@ def main():
         setattr(args, name, path)
     args.out = (ROOT / args.out).resolve()
     args.out.mkdir(parents=True, exist_ok=True)
-    command = ["xsim", "gamebub_test", "--runall"]
+    command = (["xsim", "gamebub_test", "--runall"] if args.backend == "xsim"
+               else [str(work / "obj/Vtb_gamebub")])
     for name in ("rom", "prom", "out", "frames", "dump", "aspect", "coin", "start"):
-        command += ["--testplusarg", f"{name}={getattr(args, name)}"]
+        argument = f"{name}={getattr(args, name)}"
+        command += ["--testplusarg", argument] if args.backend == "xsim" else ["+" + argument]
     output = run("game_run", command)
     print(output[-4000:])
     if "GAMEBUB PASS" not in output:

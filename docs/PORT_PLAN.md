@@ -343,4 +343,26 @@ that works in any modern browser:
   Defaults: `scratch/roms/tapper.rom`, `scratch/roms/ssio.prom`, output
   `scratch/tapper-frames/`. `--aspect 0` checks native width. Compilation
   and execution can be separated with `--compile-only` / `--run-only`.
-  Full-core visual results and first bitstream results are pending.
+  Full-core attract-mode validation is in progress; see build results below.
+* `tools/prepare_tapper.py` builds the index-0 ROM with stock `mra -A`,
+  verifies its MRA MD5/size, and writes a supplied or locally extracted
+  SSIO PROM. Its output was checked byte-for-byte against the initial
+  local test files. `README.md` documents the reproducible commands.
+* First synthesis found a T80 logical-width mismatch (`ioq and x"7"`).
+  The import now pads the mask to nine bits. The live upstream HEAD was
+  rechecked before this refresh and is unchanged. Synthesis then passed
+  with zero errors and zero critical warnings.
+* Rev 4 implementation with SRAM I/O-register constraints passed: WNS
+  +0.414 ns, WHS +0.014 ns, 74.5/135 BRAM tiles and about 6.8k LUTs.
+  The constraints follow the working ColecoVision port. The bitstream and
+  local test SD-card folder are under `build/`; no hardware test yet.
+* `scripts/package.py` stages only metadata and the bitstream into
+  `build/sdcard/cores/alanswx.MCR3`, rejecting stale hardware sources or a
+  failed routed timing report. The user supplies `ssio.prom` separately.
+* Optional `sim/run_tb.py --backend verilator` converts the VHDL with
+  GHDL 4.1 (`--std=08 -fsynopsys -frelaxed -fexplicit`) and uses Verilator
+  5.052. `sim/fast_backend.py` normalizes GHDL's generated identifier and
+  duplicate-alias issues without changing imported RTL. Xsim remains the
+  four-state reference. Both backends use the same host/SRAM/frame tests.
+  Xsim captures show Tapper's startup patterns; both backends' frame 30
+  matched byte-for-byte (black during startup).

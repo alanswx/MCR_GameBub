@@ -113,7 +113,9 @@ module tb_gamebub;
         begin
             fd = $fopen(path, "rb");
             if (!fd) $fatal(1, "Cannot open %s", path);
-            count = $fread(data, fd); $fclose(fd);
+            count = $fread(data, fd, 0, size);
+            if ($fgetc(fd) != -1) $fatal(1, "Oversized file %s", path);
+            $fclose(fd);
             if (count != size) $fatal(1, "Wrong size %s: %0d", path, count);
             command(16'h0300, id, 0);
             for (i=0; i<size; i=i+4) begin
@@ -157,11 +159,11 @@ module tb_gamebub;
     always @(posedge clk_sys) begin
         #1;
         if (running && !dut.machine_reset) begin
-            vb_q = v_vblank;
+            vb_q <= v_vblank;
             if (a_left !== audio_q) audio_changes++;
             audio_q = a_left;
             if (v_de) begin
-                if (x >= 320 || y >= 240) $fatal(1, "Frame overflow %0d,%0d",x,y);
+                if (x >= 320 || y >= 240) $fatal(1, "Frame overflow %0d,%0d vb=%b prev=%b source_vb=%b source_y=%d",x,y,v_vblank,vb_q,dut.vb,dut.video.y);
                 if ($isunknown({v_r,v_g,v_b})) $fatal(1, "Unknown video at %0d,%0d", x,y);
                 frame[y*320+x] = {v_r,v_g,v_b};
                 if ({v_r,v_g,v_b} != 0) colored++;
