@@ -64,10 +64,11 @@ roms/ with the existing folders. Launch Bally Midway MCR (alanswx.MCR).
 This installs beside the proven Bally Midway MCR3 core (alanswx.MCR3).
 
 Choose any of the 18 game ROMs in roms/MCR.
-ROM recognition selects MCR2 or MCR3 and the controls automatically.
+ROM recognition selects MCR1, MCR2, MCR3 or MCR3 Mono and the controls automatically.
 The required sound PROM is already in the core folder.
 
-All: Select coin, Start player 1. Landscape games use D-pad movement.
+All: Select coin. Use Start for player 1 except the join controls noted below.
+Landscape games use D-pad movement.
 Tapper: A fill, R player 2 start (alternating).
 Timber: A axe right, B axe left. Single-player controls only.
 Domino Man: A swat, R player 2 start (alternating).
@@ -89,6 +90,8 @@ Wacko: D-pad trackball, A right/B down/X up/Y left to shoot.
 Kozmik Krooz'r: D-pad ship, A fire, B shield, L/R turret; Start+R starts P2.
 Discs of Tron: D-pad move, A toss, B deflect, X/Y aim up/down, L/R rotate.
 Start+R starts player 2 in Discs of Tron.
+Discs of Tron uses the upright ROM set: no speech. The Environmental
+version's separate Squawk & Talk speech board is not implemented.
 Journey: D-pad move, A fire, R start player 2. Normal sound is included;
 the separate Separate Ways music sample is not implemented yet.
 Kick: Left/Right or L/R trackball, A kick, B faster movement; Start+R starts P2.

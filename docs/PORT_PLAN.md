@@ -830,3 +830,35 @@ for platform/control/memory behavior and the experimental fast model for
 catalog loading. New-board CPU startup and the four-state Rampage sound
 reference are still in progress. The first routed candidate predates
 Picture Auto; rebuild from the final source commit before packaging.
+
+
+To reduce smoke-test runtime, the fast backend now clocks inactive engines
+only during loading/reset, then holds their already-reset clocks quiet
+during play. The selected board always sees the original 40 MHz clock;
+all boards keep their download clocks while loading. This is generated
+simulation code only. A manual-4:3 Kick frame 30 matches the original
+ungated model byte-for-byte (SHA256
+`1c64b6a552b303828c6ba07ea14bb377c55a516e55dede1735aeee347ff958e5`).
+The final-source fast sweep uses Auto picture mode and checks undefined
+audio after the first two frames. Primary Xsim still uses the unchanged
+production clocks and actual unpacked FX68K structs. Source register names
+and checks remain intact; no game CPU or sound system is replaced by a stub.
+
+The user has tested the private v0.5.0 bundle on the handheld and reports
+uncertain Discs of Tron speech and missing Journey sampled music. This does
+not establish every game's controls or audio as fully verified. The shipped
+Discs MRA uses `dotron.zip` (upright), not the Environmental `dotrone` set.
+MAME's `src/mame/bally/mcr.cpp` configures the upright without Squawk & Talk
+and the Environmental version with that additional sound board. The current
+official MCR3 FPGA source implements only SSIO, without that speech board.
+
+Journey's ordinary SSIO sound is connected, but its `sepways.wav` path is
+absent from this port. The official wrapper loads index 2, stores the WAV in
+SDRAM, loops `wave_sound` under `output_4[0]` control and mixes its PCM with
+SSIO. The checked local Game Bub firmware's `core/mod.rs::load_files`
+already accepts optional extra files and transfers them to configured FPGA
+addresses with file start/end notifications. Firmware WAV decoding is not
+required for that approach: the missing work is FPGA sample storage,
+playback/control and mixing, plus optional sample metadata. No firmware
+upgrade requirement has been established. README and future ZIP guides now
+state both audio limitations explicitly.

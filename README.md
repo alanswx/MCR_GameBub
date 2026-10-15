@@ -14,7 +14,7 @@ the sideways grip remains awkward. Rotation is complete for now.
 Version 0.5.0 enables fourteen more games, which need device gameplay checks.
 It retains the corrected Domino Man alignment and startup reset sequence.
 
-Select inserts a coin; Start starts player 1. Controls are:
+Select inserts a coin. Use Start for player 1 unless noted below. Controls are:
 
 | Game | Handheld controls |
 |---|---|
@@ -41,7 +41,9 @@ Tron, Two Tigers, Kozmik Krooz'r and Discs of Tron use **Start+R** for
 player 2 start, leaving R available for rotation during play. Spinner and
 trackball buttons are substitutes for the arcade controls. Journey has its
 normal SSIO sound; its separate *Separate Ways* music sample is not yet
-implemented. High scores are not saved. MCR3 Mono provides player 1 controls only. Rampage and Power Drive use
+implemented. Discs of Tron uses the upright ROM set, without speech; the
+Environmental version's Squawk & Talk board is not implemented. High scores
+are not saved. MCR3 Mono provides player 1 controls only. Rampage and Power Drive use
 coin and action buttons to join, as on the arcade. Scrolling MCR hardware
 is a separate integration.
 
