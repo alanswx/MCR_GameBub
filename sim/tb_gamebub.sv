@@ -128,7 +128,7 @@ module tb_gamebub;
     endtask
     string rom_path, prom_path, out_path;
     integer frames = 120, dump = 30, aspect = 1;
-    integer expected_game = 0;
+    integer expected_game = 0, expected_family = 0, portrait_sideways = 0;
     reg [31:0] expected_crc;
     integer coin_frame = -1, start_frame = -1;
     bit running = 0;
@@ -139,20 +139,25 @@ module tb_gamebub;
         if ($value$plusargs("frames=%d", frames)) begin end
         if ($value$plusargs("dump=%d", dump)) begin end
         if ($value$plusargs("aspect=%d", aspect)) begin end
+        if ($value$plusargs("portrait_sideways=%d", portrait_sideways)) begin end
         if ($value$plusargs("coin=%d", coin_frame)) begin end
         if ($value$plusargs("start=%d", start_frame)) begin end
         if (frames < 1 || dump < 1) $fatal(1, "frames and dump must be positive");
+        if (!$value$plusargs("expected_family=%d", expected_family)) $fatal(1, "Missing expected family");
         if (!$value$plusargs("expected_game=%d", expected_game)) $fatal(1, "Missing expected game");
         if (!$value$plusargs("expected_crc=%h", expected_crc)) $fatal(1, "Missing expected CRC");
         wait (locked);
         repeat (32) @(negedge clk_sys);
         fw_reset = 0;
-        load_file(rom_path, 0, 'h10000000, expected_game == 5 ? 'h1c000 : 'h3a000);
+        load_file(rom_path, 0, 'h10000000, expected_family == 1 ? 'h1c000 : 'h3a000);
         load_file(prom_path, 1, 'h10040000, 32);
-        if (dut.game_mcr2 !== (expected_game == 5) || dut.game_timber !== (expected_game == 1) || dut.host.rom_crc !== expected_crc)
+        if (dut.game_shollow !== (expected_family == 1 && expected_game == 0) || dut.game_mcr2 !== (expected_family == 1) || dut.game_timber !== (expected_game == 1) || dut.host.rom_crc !== expected_crc)
             $fatal(1, "Automatic ROM recognition failed: game=%b CRC=%h", dut.game_timber, dut.host.rom_crc);
         $display("GAME IDENTIFIED: mod=%0d CRC=%h", expected_game, expected_crc);
         write_word('h200, aspect);
+        write_word('h210, portrait_sideways);
+        if (dut.videoTransform_rotation !== ((expected_family == 1 && expected_game == 0 && !portrait_sideways) ? 2'd1 : 2'd0))
+            $fatal(1, "Wrong game orientation request");
         command(16'h0102, 0, 0);
         command(16'h0200, 1, 0);
         command(16'h0100, 0, 0);

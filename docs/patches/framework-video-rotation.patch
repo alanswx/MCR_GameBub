@@ -1,0 +1,231 @@
+From 6e5adf7ed3d8776f504d55e6dbb8d6fcc5cfa930 Mon Sep 17 00:00:00 2001
+From: Alan Steremberg <alan.steremberg@gmail.com>
+Date: Wed, 14 Oct 2026 20:54:14 -0700
+Subject: [PATCH] Add optional frame-buffer read rotation for portrait cores
+
+---
+ .../lib/video/FramebufferTransform.scala      | 83 +++++++++++++++++++
+ .../interface/VideoTransformV0.scala          | 11 +++
+ .../scala/platform/handheld/HandheldTop.scala | 49 ++++++++++-
+ 3 files changed, 141 insertions(+), 2 deletions(-)
+ create mode 100644 src/main/scala/lib/video/FramebufferTransform.scala
+ create mode 100644 src/main/scala/net/gamebub/framework/interface/VideoTransformV0.scala
+
+diff --git a/src/main/scala/lib/video/FramebufferTransform.scala b/src/main/scala/lib/video/FramebufferTransform.scala
+new file mode 100644
+index 0000000..86f2fe1
+--- /dev/null
++++ b/src/main/scala/lib/video/FramebufferTransform.scala
+@@ -0,0 +1,83 @@
++package lib.video
++
++import chisel3._
++import chisel3.util._
++
++/** Changes orientation only between output frames. Input must already be synchronized. */
++class FrameRotationLatch extends Module {
++  val io = IO(new Bundle {
++    val requested = Input(UInt(2.W))
++    val boundary = Input(Bool())
++    val active = Output(UInt(2.W))
++  })
++  val active = RegInit(0.U(2.W))
++  when (io.boundary) { active := io.requested }
++  io.active := active
++}
++
++/** Read-address transform for an existing row-major framebuffer. No image storage.
++  * Quarter turns fit the screen with a rational scale; 0/180 preserve integer scaling.
++  * Read lookahead is measured along the output's physical scan axis, before rotation.
++  */
++class FramebufferTransform(
++  width: Int, height: Int, screenWidth: Int, screenHeight: Int,
++  offsetX: Int = 0, delayX: Int = 0, delayY: Int = 0,
++  xBits: Int = 10, yBits: Int = 10,
++) extends Module {
++  require(width > 0 && height > 0 && screenWidth > 0 && screenHeight > 0)
++  val io = IO(new Bundle {
++    val x = Input(UInt(xBits.W))
++    val y = Input(UInt(yBits.W))
++    val rotation = Input(UInt(2.W))
++    val address = Output(UInt(log2Ceil(width * height).W))
++    val inBounds = Output(Bool())
++  })
++
++  def translate(value: UInt, origin: Int): UInt =
++    if (origin >= 0) value - origin.U else value + (-origin).U
++
++  def inRange(value: UInt, start: Int, count: Int): Bool =
++    (if (start > 0) value >= start.U else true.B) && value < (start + count).U
++
++  val quarter = io.rotation(0)
++  val normalScale = (screenWidth / width).min(screenHeight / height).max(1)
++  val normalWidth = width * normalScale
++  val normalHeight = height * normalScale
++  val fitWidthLimited = screenWidth.toLong * width <= screenHeight.toLong * height
++  val portraitWidth = if (fitWidthLimited) screenWidth else height * screenHeight / width
++  val portraitHeight = if (fitWidthLimited) width * screenWidth / height else screenHeight
++  val normalX = (screenWidth - normalWidth) / 2 + offsetX
++  val normalY = (screenHeight - normalHeight) / 2
++  val portraitX = (screenWidth - portraitWidth) / 2 + offsetX
++  val portraitY = (screenHeight - portraitHeight) / 2
++
++  // Preserve the scan driver's modular coordinate width during lookahead.
++  // Blanking before coordinate zero is encoded as unsigned wraparound.
++  val lookX = Wire(UInt(xBits.W))
++  val lookY = Wire(UInt(yBits.W))
++  lookX := io.x + delayX.U
++  lookY := io.y + delayY.U
++
++  // Use the rounded output dimensions in both centering and inverse scaling.
++  val nx = translate(lookX, normalX) / normalScale.U
++  val ny = translate(lookY, normalY) / normalScale.U
++  def rescale(value: UInt, source: Int, output: Int): UInt = {
++    val common = BigInt(source).gcd(BigInt(output)).toInt
++    (value * (source / common).U) / (output / common).U
++  }
++  val qx = rescale(translate(lookX, portraitX), height, portraitWidth)
++  val qy = rescale(translate(lookY, portraitY), width, portraitHeight)
++  val sx = Wire(UInt(log2Ceil(width).W))
++  val sy = Wire(UInt(log2Ceil(height).W))
++  sx := nx
++  sy := ny
++  switch (io.rotation) {
++    is (1.U) { sx := qy; sy := (height - 1).U - qx }
++    is (2.U) { sx := (width - 1).U - nx; sy := (height - 1).U - ny }
++    is (3.U) { sx := (width - 1).U - qy; sy := qx }
++  }
++  io.address := sy * width.U + sx
++  io.inBounds := Mux(quarter,
++    inRange(io.x, portraitX, portraitWidth) && inRange(io.y, portraitY, portraitHeight),
++    inRange(io.x, normalX, normalWidth) && inRange(io.y, normalY, normalHeight))
++}
+diff --git a/src/main/scala/net/gamebub/framework/interface/VideoTransformV0.scala b/src/main/scala/net/gamebub/framework/interface/VideoTransformV0.scala
+new file mode 100644
+index 0000000..dbcdd0c
+--- /dev/null
++++ b/src/main/scala/net/gamebub/framework/interface/VideoTransformV0.scala
+@@ -0,0 +1,11 @@
++package net.gamebub.framework.interface
++
++import chisel3._
++
++/** Optional game-layer transform. The board's panel mounting and menu are independent.
++  * Rotation is clockwise: 0 = none, 1 = 90, 2 = 180, 3 = 270 degrees.
++  * The framework synchronizes requests and applies them during output blanking.
++  */
++class VideoTransformV0 extends Bundle {
++  val rotation = Output(UInt(2.W))
++}
+diff --git a/src/main/scala/platform/handheld/HandheldTop.scala b/src/main/scala/platform/handheld/HandheldTop.scala
+index e31ba55..182e1bd 100644
+--- a/src/main/scala/platform/handheld/HandheldTop.scala
++++ b/src/main/scala/platform/handheld/HandheldTop.scala
+@@ -5,7 +5,7 @@ import chisel3.util._
+ import _root_.circt.stage.ChiselStage
+ import lib.mem.{MemoryInterface, MemoryMap, RegisterMap}
+ import lib.util.{FractionalDivider, ButtonFilter}
+-import lib.video.{Color, ColorARGB, ColorRGB}
++import lib.video.{Color, ColorARGB, ColorRGB, FramebufferTransform, FrameRotationLatch}
+ import net.gamebub.framework.{Core, CoreException}
+ import net.gamebub.framework.interface._
+ import platform.handheld.display._
+@@ -231,6 +231,13 @@ class HandheldTop[T <: Core](coreFactory: () => T, revision: Revision) extends M
+     case None => throw new CoreException("'video' is required")
+   }
+ 
++  // Optional game-layer orientation. Absence elaborates the original read path.
++  val coreVideoRotation: Option[UInt] = core.getInterface("videoTransform") match {
++    case Some(transform: VideoTransformV0) => Some(transform.rotation)
++    case Some(x) => throw new CoreException("Unknown 'videoTransform': " + x.getClass())
++    case None => None
++  }
++
+   // Video filter
+   val videoFilterIn = Wire(ColorRGB(videoColorDepthR, videoColorDepthG, videoColorDepthB))
+   val videoFilterOut = Wire(ColorRGB(8))
+@@ -471,7 +478,7 @@ class HandheldTop[T <: Core](coreFactory: () => T, revision: Revision) extends M
+       // Framework status
+       0x2000 -> RegisterMap.Entry.r(buttonState),
+       0x2004 -> RegisterMap.Entry.r(RegNext(RegNext(io.cartridge.switch))),
+-    )
++    ) ++ coreVideoRotation.toSeq.map(rotation => 0x0108 -> RegisterMap.Entry.r(rotation))
+   )
+ 
+   val overlayInterface = Wire(new MemoryInterface(addressWidth = 18, dataWidth = 16))
+@@ -572,6 +579,15 @@ class HandheldTop[T <: Core](coreFactory: () => T, revision: Revision) extends M
+     val framebufferReadAddress = Wire(UInt(log2Ceil(videoWidth * videoHeight).W))
+     val overlayReadAddress = Wire(UInt(log2Ceil(overlayWidth * overlayHeight).W))
+ 
++    val dpiFrameBoundary = coreVideoRotation.map(_ => WireDefault(false.B))
++    val outputRotation = coreVideoRotation.map { request =>
++      val latch = Module(new FrameRotationLatch)
++      latch.io.requested := XpmCdcHandshake.continuous(clock, request)
++      // Both rising vsync edges occur during blanking, before visible read lookahead.
++      latch.io.boundary := dpiFrameBoundary.get
++      latch.io.active
++    }
++
+     val audioData = XpmCdcHandshake.continuous(clock, coreAudioData)
+ 
+     // Buffering the read allows this to be a block ram instead of distributed ram
+@@ -667,6 +683,7 @@ class HandheldTop[T <: Core](coreFactory: () => T, revision: Revision) extends M
+         }
+       }
+       val hdmiFramePulse = io.hdmiCy === (hdmiFrameHeight - 1).U
++      dpiFrameBoundary.foreach(_ := hdmiFramePulse && !RegNext(hdmiFramePulse))
+       framebufferIndex := regHdmiFrame
+       when (hdmiFramePulse && !RegNext(hdmiFramePulse)) {
+         regHdmiFrame := lastFrameComplete
+@@ -685,6 +702,19 @@ class HandheldTop[T <: Core](coreFactory: () => T, revision: Revision) extends M
+         videoY >= videoOffsetY.U &&
+         videoY < (videoOffsetY + (videoHeight * videoScale)).U
+ 
++      outputRotation.foreach { rotation =>
++        val transform = Module(new FramebufferTransform(videoWidth, videoHeight,
++          screenWidth, screenHeight, delayX = framebufferReadDelay,
++          xBits = videoX.getWidth, yBits = videoY.getWidth))
++        transform.io.x := videoX
++        transform.io.y := videoY
++        transform.io.rotation := rotation
++        when (rotation =/= 0.U) {
++          framebufferReadAddress := transform.io.address
++          framebufferInBounds := transform.io.inBounds
++        }
++      }
++
+       // Scale overlay
+       val overlayScale = (screenWidth / overlayWidth).min(screenHeight / overlayHeight)
+       val overlayOffsetX = (screenWidth - (overlayWidth * overlayScale)) / 2
+@@ -714,6 +744,7 @@ class HandheldTop[T <: Core](coreFactory: () => T, revision: Revision) extends M
+       val dpiY = if (revision.displayRotate) dpiDriverIo.pixelX else dpiDriverIo.pixelY
+       videoX := dpiX
+       videoY := dpiY
++      dpiFrameBoundary.foreach(_ := dpiDriverIo.signals.vsync && !RegNext(dpiDriverIo.signals.vsync))
+       framebufferIndex := dpiDriverIo.displayFrame
+ 
+       // Scale and center framebuffer without output video.
+@@ -732,6 +763,20 @@ class HandheldTop[T <: Core](coreFactory: () => T, revision: Revision) extends M
+         dpiY >= videoOffsetY.U &&
+         dpiY < (videoOffsetY + (videoHeight * videoScale)).U
+ 
++      outputRotation.foreach { rotation =>
++        val transform = Module(new FramebufferTransform(videoWidth, videoHeight,
++          screenWidth, screenHeight, offsetX = revision.displayOffsetX,
++          delayX = framebufferReadDelayX, delayY = framebufferReadDelayY,
++          xBits = dpiX.getWidth, yBits = dpiY.getWidth))
++        transform.io.x := dpiX
++        transform.io.y := dpiY
++        transform.io.rotation := rotation
++        when (rotation =/= 0.U) {
++          framebufferReadAddress := transform.io.address
++          framebufferInBounds := transform.io.inBounds
++        }
++      }
++
+       // Scale overlay
+       val overlayScale = (screenWidth / overlayWidth).min(screenHeight / overlayHeight)
+       val overlayOffsetX = (screenWidth - (overlayWidth * overlayScale)) / 2 + revision.displayOffsetX
+-- 
+2.43.0
+

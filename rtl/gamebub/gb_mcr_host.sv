@@ -7,7 +7,8 @@ module gb_mcr_host #(
     // CRC32/ISO-HDLC of the complete stock MRA index-0 ROM, no header.
     parameter [31:0] TAPPER_CRC32 = 32'h0f584827,
     parameter [31:0] TIMBER_CRC32 = 32'h3f49e94e,
-    parameter [31:0] DOMINO_CRC32 = 32'h085cde56
+    parameter [31:0] DOMINO_CRC32 = 32'h085cde56,
+    parameter [31:0] SHOLLOW_CRC32 = 32'ha2403144
 ) (
     input wire clk, reset,
     input wire mem_enable, mem_write,
@@ -28,6 +29,7 @@ module gb_mcr_host #(
     output reg [7:0] dips,
     output reg game_timber,
     output reg game_mcr2,
+    output reg game_shollow, portrait_sideways,
     output wire [31:0] debug_status
 );
     reg [31:0] command [0:7];
@@ -40,8 +42,9 @@ module gb_mcr_host #(
     reg rom_loading;
     wire [31:0] rom_crc = ~crc_state;
     wire domino_known = rom_crc == DOMINO_CRC32;
-    wire [19:0] expected_size = domino_known ? 20'h1c000 : 20'h3a000;
-    wire game_known = domino_known || rom_crc == TAPPER_CRC32 || rom_crc == TIMBER_CRC32;
+    wire shollow_known = rom_crc == SHOLLOW_CRC32;
+    wire [19:0] expected_size = (domino_known || shollow_known) ? 20'h1c000 : 20'h3a000;
+    wire game_known = domino_known || shollow_known || rom_crc == TAPPER_CRC32 || rom_crc == TIMBER_CRC32;
     function automatic [31:0] crc_byte(input [31:0] previous, input [7:0] data);
         reg [31:0] value;
         integer bit_index;
@@ -92,7 +95,8 @@ module gb_mcr_host #(
             command_state <= 0; setup_done <= 0; run <= 0;
             present <= 0; load_error <= 0; focus <= 0;
             crc_state <= 32'hffffffff; rom_bytes <= 0;
-            rom_loading <= 0; game_timber <= 0; game_mcr2 <= 0;
+            rom_loading <= 0; game_timber <= 0; game_mcr2 <= 0; game_shollow <= 0;
+            portrait_sideways <= 0;
             aspect <= 1; volume <= 0; service <= 0; dips <= 8'hff;
             for (i=0; i<8; i=i+1) command[i] <= 0;
             for (i=0; i<2; i=i+1) file_size[i] <= 0;
@@ -112,6 +116,7 @@ module gb_mcr_host #(
                             12'h204: volume <= mem_dataWrite[1:0];
                             12'h208: service <= mem_dataWrite[0];
                             12'h20c: dips <= mem_dataWrite[7:0];
+                            12'h210: portrait_sideways <= mem_dataWrite[0];
                             default: ;
                         endcase
                     end else begin
@@ -122,12 +127,13 @@ module gb_mcr_host #(
                             12'h204: mem_dataRead <= {30'd0, volume};
                             12'h208: mem_dataRead <= {31'd0, service};
                             12'h20c: mem_dataRead <= {24'd0, dips};
+                            12'h210: mem_dataRead <= {31'd0, portrait_sideways};
                             12'h800: mem_dataRead <= 32'h4d435233;
                             12'h804: mem_dataRead <= debug_status;
                             12'h810: mem_dataRead <= file_size[0];
                             12'h814: mem_dataRead <= file_size[1];
                             12'h818: mem_dataRead <= rom_crc;
-                            12'h81c: mem_dataRead <= {29'd0, game_mcr2, game_known, game_timber};
+                            12'h81c: mem_dataRead <= {28'd0, game_shollow, game_mcr2, game_known, game_timber};
                             default: ;
                         endcase
                     end
@@ -178,7 +184,7 @@ module gb_mcr_host #(
                                   run <= 0; setup_done <= 0; present[id] <= 0;
                                   if (id == 0) begin
                                       load_error <= 0; crc_state <= 32'hffffffff;
-                                      rom_bytes <= 0; rom_loading <= 1; game_timber <= 0; game_mcr2 <= 0;
+                                      rom_bytes <= 0; rom_loading <= 1; game_timber <= 0; game_mcr2 <= 0; game_shollow <= 0;
                                   end
                               end
                     16'h0301: if (!id_ok || load_error ||
@@ -188,7 +194,8 @@ module gb_mcr_host #(
                                   present[id] <= 1; file_size[id] <= command[2];
                                   if (!id) begin
                                       game_timber <= rom_crc == TIMBER_CRC32;
-                                      game_mcr2 <= domino_known;
+                                      game_mcr2 <= domino_known || shollow_known;
+                                      game_shollow <= shollow_known;
                                       rom_loading <= 0;
                                       dips <= 8'hff; // All supported MRAs default to FF 00.
                                   end

@@ -1,0 +1,34 @@
+{
+  "coleco": {
+    "ButtonFilter.sv": "d67969827f2026cd12ba22cf623542ce8c862906031dd33ab34db44730e40737",
+    "ColecoVision.sv": "94af08ecda0e663f9be2b87bb37090627614869d0e3c053ebac761b7471a36f4",
+    "FractionalDivider.sv": "c8884ae8fec0ab24044f55af27968f6b1c061e85fea215d97b2101777a477a42",
+    "HandheldTop.sv": "085cea838dd4cd7e33e95465420168d867b56fde8d86bd879e5b68488fe49561",
+    "ILI9806E.sv": "e1ec5cd644c3e9357abac78c1a42fe130eba760101f91bf001d32f047dbe02bb",
+    "ResetSynchronizer.sv": "b5b769057955a2742fad4944aa9e49fb4344ccc420b159d8facf7721402ee965",
+    "SpiReceiverFifo.sv": "915e6c1cd3fc2df3ad31ddd5ac13fb68c7e52ba54c9f9e872a40f45c75d4ba7f",
+    "XpmCdcHandshake.sv": "d1e9208f267a371f9da7ad077c98a39e5eac0efa2dee100494f53abaa321ffc5",
+    "XpmCdcSingle.sv": "bfa35fccddcad7d03f48292fb171ad5b49549a6e15e8ac323e649c47d7065fe5",
+    "XpmCdcSyncRst.sv": "06859160c963b79ad468dd41b0416565b6b2a8bd6ab4fefcf9f8d15d16846db7",
+    "XpmFifoAsync.sv": "388c50988d8a7215f9630692ba5d2a2626872400946c4fe6d52c0121457eca9f",
+    "XpmFifoAsync_1.sv": "d940bbdc6745645d95f5cf23f5f6a4f2eef58125e6c5f061cdfffcdc4845f581",
+    "framebuffers_sram_68160x9.sv": "4c3d7c0e48780c1c9771e4bcefe0196eb13b8ea39d41a622bae71f6a4a52c2b5",
+    "overlayFramebuffer_sram_86400x2.sv": "c3f01e2b109ad947aa645314b8a88d4b7560bf2a50c99b581c08344c53fb7fba"
+  },
+  "iigs": {
+    "AppleIIgs.sv": "78caf7388946b68eb458d60d70f59a1eea3b87b21019a0551cff10e2d5bd5576",
+    "ButtonFilter.sv": "d67969827f2026cd12ba22cf623542ce8c862906031dd33ab34db44730e40737",
+    "FractionalDivider.sv": "c8884ae8fec0ab24044f55af27968f6b1c061e85fea215d97b2101777a477a42",
+    "HandheldTop.sv": "875fbd1710f44437e523789c6e1fdfb258454dcefbf904d806b5ccf10848ef37",
+    "ILI9806E.sv": "8fc7bab93ddddafb68110b5299a2043a0b173b8c0735cd2952bc1b4df15cb8f1",
+    "ResetSynchronizer.sv": "b5b769057955a2742fad4944aa9e49fb4344ccc420b159d8facf7721402ee965",
+    "SpiReceiverFifo.sv": "915e6c1cd3fc2df3ad31ddd5ac13fb68c7e52ba54c9f9e872a40f45c75d4ba7f",
+    "XpmCdcHandshake.sv": "d1e9208f267a371f9da7ad077c98a39e5eac0efa2dee100494f53abaa321ffc5",
+    "XpmCdcSingle.sv": "bfa35fccddcad7d03f48292fb171ad5b49549a6e15e8ac323e649c47d7065fe5",
+    "XpmCdcSyncRst.sv": "06859160c963b79ad468dd41b0416565b6b2a8bd6ab4fefcf9f8d15d16846db7",
+    "XpmFifoAsync.sv": "388c50988d8a7215f9630692ba5d2a2626872400946c4fe6d52c0121457eca9f",
+    "XpmFifoAsync_1.sv": "d940bbdc6745645d95f5cf23f5f6a4f2eef58125e6c5f061cdfffcdc4845f581",
+    "framebuffers_sram_64000x9.sv": "5e2899ae95e3f3cc51d4302093ccfc39c957515141c5a07401e8745239ec43a8",
+    "overlayFramebuffer_sram_86400x2.sv": "c3f01e2b109ad947aa645314b8a88d4b7560bf2a50c99b581c08344c53fb7fba"
+  }
+}

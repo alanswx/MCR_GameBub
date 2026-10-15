@@ -24,6 +24,7 @@ def main():
     p.add_argument("--out", type=Path, default=Path("scratch/tapper-frames"))
     p.add_argument("--frames", type=int, default=120)
     p.add_argument("--dump", type=int, default=30)
+    p.add_argument("--portrait-sideways", type=int, choices=(0, 1), default=0)
     p.add_argument("--aspect", type=int, choices=(0, 1), default=1)
     p.add_argument("--coin", type=int, default=-1)
     p.add_argument("--start", type=int, default=-1)
@@ -71,14 +72,14 @@ def main():
     args.out.mkdir(parents=True, exist_ok=True)
     command = (["xsim", "gamebub_test", "--runall"] if args.backend == "xsim"
                else [str(work / "obj/Vtb_gamebub")])
-    for name in ("rom", "prom", "out", "frames", "dump", "aspect", "coin", "start"):
+    for name in ("rom", "prom", "out", "frames", "dump", "aspect", "coin", "start", "portrait_sideways"):
         argument = f"{name}={getattr(args, name)}"
         command += ["--testplusarg", argument] if args.backend == "xsim" else ["+" + argument]
     checksum = zlib.crc32(args.rom.read_bytes())
-    known_games = {0x0f584827: 0, 0x3f49e94e: 1, 0x085cde56: 5}
+    known_games = {0x0f584827: (0, 0), 0x3f49e94e: (1, 0), 0x085cde56: (5, 1), 0xa2403144: (0, 1)}
     if checksum not in known_games:
         p.error(f"Unsupported ROM CRC {checksum:08x}")
-    for argument in (f"expected_game={known_games[checksum]}", f"expected_crc={checksum:08x}"):
+    for argument in (f"expected_game={known_games[checksum][0]}", f"expected_family={known_games[checksum][1]}", f"expected_crc={checksum:08x}"):
         command += ["--testplusarg", argument] if args.backend == "xsim" else ["+" + argument]
     output = run("game_run", command)
     print(output[-4000:])

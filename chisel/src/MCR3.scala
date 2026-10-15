@@ -16,6 +16,7 @@ class MCR3 extends Module with Core {
       colorDepthR = 3, colorDepthG = 3, colorDepthB = 3,
       framePeriod = 634.0 * 525 / 20_000_000,
     )
+    val videoTransform = new VideoTransformV0()
     val audio = new AudioV0()
     val host = new HostV0()
     val input = new InputV0()

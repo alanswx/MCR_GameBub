@@ -1,7 +1,7 @@
 # Bally Midway MCR for Game Bub
 
 Work in progress: **one combined MCR2/MCR3 core on Game Bub rev 4**,
-supporting Tapper, Timber, and Domino Man. It uses Dar's current MiSTer board
+supporting Tapper, Timber, Domino Man, and Satan's Hollow (Set 1). It uses Dar's current MiSTer board
 engines and the Tang port's MCR2 full-height video adjustment, while
 retaining MiSTer's 18-pixel horizontal pipeline compensation. Choose a
 `.rom` from the file browser; CRC32 recognition
@@ -9,7 +9,7 @@ selects the correct controls automatically. Supported files are the stock
 MRAs' index-0 outputs listed in [gamedb/games.tsv](gamedb/games.tsv).
 Unknown or damaged images are rejected instead of using the wrong controls.
 
-All three games are hardware-confirmed to run in the combined core.
+Tapper, Timber, and Domino Man are hardware-confirmed to run in the combined core.
 Version 0.2.1's corrected Domino Man alignment is also hardware-confirmed;
 Tapper and Timber continue to look correct. Automatic ROM recognition and the
 double-reset startup fix are retained. See the
@@ -19,10 +19,18 @@ All three games use D-pad movement, Select for coin, and Start for player 1.
 Tapper uses A to fill and R for player 2 start. Timber uses A for axe right
 and B for axe left; its second joystick is inactive in this build.
 Domino Man uses A to swat and R for player 2 start.
-High scores are not yet saved. MCR1, MCR3Scroll, and MCR3 Mono are not yet
-integrated; this is the first combined-family hardware candidate.
+Satan's Hollow uses Left/Right, A fire, and B shield. **Portrait games**
+defaults to **Upright**, a 360x480 picture with side borders when holding the
+Bub normally. **Hold sideways (CW)** fills the landscape game area; turn the
+Bub clockwise and use Down/Up for screen left/right. The menu retains its
+normal orientation. This 0.3.0 portrait build needs LCD/HDMI hardware testing.
 
-The baseline uses the unmodified framework, SRAM for sound and sprite ROMs,
+High scores are not yet saved. MCR1, MCR3Scroll, and MCR3 Mono are not yet
+integrated.
+
+The confirmed 0.2.1 baseline uses the unmodified framework. The 0.3.0 test
+branch adds an optional frame-buffer read transform with no extra image RAM.
+See [the framework design](docs/FRAMEWORK_CHANGES.md). Both use SRAM for sound and sprite ROMs,
 and 320×240 video with either 4:3 stretching or native-width black borders.
 
 ## Local ROM preparation
@@ -39,7 +47,8 @@ python3 tools/prepare_mcr3.py --game tapper \
 
 Repeat with `--game timber --zip /path/to/timber.zip` for Timber or
 `--game domino --zip /path/to/domino.zip` for Domino Man. Domino Man also
-requires the sibling `Arcade-MCR2_MiSTer` source clone.
+requires the sibling `Arcade-MCR2_MiSTer` source clone. Use
+`--game shollow --zip /path/to/shollow.zip` for Satan's Hollow.
 This runs `mra -A` on the selected upstream MRA, checks the assembled ROM's
 size and MD5, and writes the selected `.rom` and `ssio.prom` under `scratch/roms`.
 Alternatively pass `--prom /path/to/ssio.prom` for an existing 32-byte
@@ -53,6 +62,7 @@ source scripts/env.sh
 python3 scripts/import_mcr.py --check
 python3 scripts/import_mcr2.py --check
 scripts/lint.sh --test
+python3 scripts/check_rotation.py --defaults
 python3 sim/run_tb.py --frames 120 --dump 30
 ./mill root.buildCore --target gamebub_rev4
 ```
@@ -78,16 +88,16 @@ available yet. Once the build passes routed timing, stage a local hardware
 test with `python3 scripts/package.py`. Copy `build/sdcard/cores/alanswx.MCR`
 to your SD card's `cores/` folder (beside the original MCR3 core), put your
 `ssio.prom` inside it, and launch **Bally Midway MCR**. Choose
-`Tapper.rom`, `Timber.rom`, or `Domino.rom` when launching the core.
+`Tapper.rom`, `Timber.rom`, `Domino.rom`, or `Satan's Hollow.rom` when launching the core.
 
 For a private SD-card ZIP containing your local ROMs and PROM:
 
 ```sh
 python3 scripts/package.py --roms scratch/roms \
-  --zip build/MCR_GameBub_combined_test.zip
+  --zip build/MCR_GameBub_portrait_v0.3.0.zip
 ```
 
-The ZIP includes only this core, three ROMs, the PROM, installation notes,
+The ZIP includes only this core, four ROMs, the PROM, installation notes,
 and checksums. It leaves existing settings and other cores untouched.
 It contains local ROM data and is not a public release.
 

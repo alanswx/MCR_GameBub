@@ -7,6 +7,7 @@ module mcr3_gamebub (
 	output logic        clocks_clockOutDisplay,
 	output logic        clocks_clockOutSpi,
 	output logic        clocks_locked,
+	output logic [1:0]  videoTransform_rotation,
 	output logic [2:0]  video_data_r,
 	output logic [2:0]  video_data_g,
 	output logic [2:0]  video_data_b,
@@ -62,7 +63,8 @@ module mcr3_gamebub (
     wire core_reset, act_reset, focus, aspect, service;
     wire [1:0] volume;
     wire [7:0] dips;
-    wire game_timber, game_mcr2;
+    wire game_timber, game_mcr2, game_shollow, portrait_sideways;
+    assign videoTransform_rotation = game_shollow && !portrait_sideways ? 2'd1 : 2'd0;
     wire wr_req, wr_ack, wr_error, initialized;
     wire [19:0] wr_addr;
     wire [7:0] wr_data;
@@ -78,6 +80,7 @@ module mcr3_gamebub (
         .wr_ack(wr_ack), .wr_error(wr_error),
         .core_reset(core_reset), .act_reset(act_reset), .focus(focus),
         .aspect(aspect), .volume(volume), .service(service), .dips(dips), .game_timber(game_timber), .game_mcr2(game_mcr2),
+        .game_shollow(game_shollow), .portrait_sideways(portrait_sideways),
         .debug_status(debug_status)
     );
     wire machine_reset;
@@ -146,17 +149,20 @@ module mcr3_gamebub (
         .dl_nvram(dl_nvram), .dl_nvram_wr(dl_nvram_wr),
         .prom_addr(prom_addr), .prom_data(prom_data), .prom_wr(prom_wr)
     );
-    wire [3:0] domino_directions = {input_buttons_down, input_buttons_up,
-        input_buttons_right, input_buttons_left} & {4{focus}};
+    wire [7:0] m2_input0, m2_input1, m2_input2;
+    gb_mcr2_inputs mcr2_inputs (
+        .shollow(game_shollow), .sideways(portrait_sideways && game_shollow),
+        .focus(focus), .service(service), .up(input_buttons_up), .down(input_buttons_down),
+        .left(input_buttons_left), .right(input_buttons_right), .a(input_buttons_a), .b(input_buttons_b),
+        .start(input_buttons_start), .coin(input_buttons_select), .start2(input_buttons_r),
+        .port0(m2_input0), .port1(m2_input1), .port2(m2_input2)
+    );
     mcr2 machine_mcr2 (
         .clock_40(clk_sys), .reset(machine_reset || !game_mcr2), .tv15Khz_mode(1'b0),
         .video_r(m2_r), .video_g(m2_g), .video_b(m2_b), .video_csync(),
         .video_hblank(m2_hb), .video_vblank(m2_vb), .video_hs(), .video_vs(), .video_ce(m2_ce),
         .separate_audio(1'b0), .audio_out_l(m2_left), .audio_out_r(m2_right),
-        .input_0(~{service, 2'b00, input_buttons_a && focus, input_buttons_r && focus,
-                   input_buttons_start && focus, 1'b0, input_buttons_select && focus}),
-        .input_1(~{4'b0000, domino_directions}),
-        .input_2(~{3'b000, input_buttons_a && focus, domino_directions}),
+        .input_0(m2_input0), .input_1(m2_input1), .input_2(m2_input2),
         .input_3(dips), .input_4(8'hff), .flip_out(),
         .cpu_rom_addr(m2_cpu_addr), .cpu_rom_do(cpu_data), .cpu_rom_rd(),
         .snd_rom_addr(m2_sound_addr), .snd_rom_do(sound_data),

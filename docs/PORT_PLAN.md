@@ -569,3 +569,50 @@ Man capture alignment and continued correct video for Tapper and Timber.
 Version 0.2.1 is the confirmed combined MCR2/MCR3 baseline. The bitstream
 is unchanged; documentation and private ZIP installation notes now reflect
 the result. Other families remain subsequent integration work.
+
+
+### Portrait games and Satan's Hollow (feature branch)
+
+The user authorized continuing and requested upright and sideways settings,
+defaulting to upright because a sideways grip may be awkward. Confirmed
+that framework `displayRotate` is a compile-time LCD mounting correction;
+there is no runtime rotation register. Implemented optional
+`VideoTransformV0.rotation` and a framebuffer read-address transform on local
+`feature/video-rotation` (framework) and `feature/portrait-video` (this repo).
+The existing two frame stores are reused; no additional image RAM is needed.
+Upright MCR is a clockwise turn, 240x320 logically, scaled by 3/2 to 360x480.
+The LCD mounting compensation, overlay, stored-frame readback and frame
+buffering remain under the framework's existing paths. HDMI uses the same
+orientation and aspect. Requests cross through XPM handshake and latch on
+output blanking; the menu remains in its normal orientation.
+
+Core register `0x210` selects Upright (0, default) or Sideways (1). Sideways
+uses the original full landscape picture and assumes a clockwise handheld
+turn; Down/Up become game Left/Right. It affects portrait games only.
+An optional framework informational register `0x0108` reports the core's
+requested transform. Cores without the interface keep the old register map.
+
+Satan's Hollow (Set 1) is the ordinary MCR2 MRA output: size 0x1c000,
+MD5 `cc2c7141ad992cffa1bd34ee74952152`, CRC32 `a2403144`, mod 0, DIPs FF 00,
+clockwise portrait rotation. Controls match upstream (A fire, B shield).
+The existing verified MCR2 board import is unchanged.
+
+Rotation unit tests pass 1,618,944 coordinate cases across all four turns,
+LCD/HDMI scan axes, bounds, fractional scale, read lookahead including
+unsigned blanking wrap, and frame-boundary mode changes. Initial testing
+caught the need to preserve the LCD coordinate width when adding read
+lookahead across zero; this is now covered by the regression. Generated
+ColecoVision and Apple IIgs default HDL matches the db9d3b0 baselines exactly
+once source comments are removed (14 modules each). The non-opted-in MCR
+HDL was also checked before adding the optional interface. Compatibility
+checks use the sibling declarations without modifying the source repos;
+no separate routed Coleco/IIgs rebuild has been performed.
+
+Existing host/SRAM/reset/video/raster tests and the new MCR2 controls tests
+pass. Satan's Hollow auto-detection and its clockwise transform request pass. Its
+first ten simulated frames have an uninitialized palette, unlike the other
+games; a longer reference boot run is investigating the startup interval.
+The portrait bitstream's synthesis still uses 90/135 BRAM tiles (11,546
+LUTs); final routed timing is in progress. This is a private local prototype, with no
+remote fork, push or public release. Public release remains subject to the
+framework process and licensing decisions already documented above.

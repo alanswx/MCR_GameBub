@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--zip", type=Path, help="write a private SD-card test ZIP")
-    parser.add_argument("--roms", type=Path, help="local folder with tapper.rom, timber.rom, domino.rom, ssio.prom")
+    parser.add_argument("--roms", type=Path, help="local folder with tapper.rom, timber.rom, domino.rom, shollow.rom, ssio.prom")
     args = parser.parse_args()
     if bool(args.zip) != bool(args.roms):
         parser.error("Use --zip and --roms together for the private test bundle")
@@ -26,7 +26,9 @@ def main():
     if not bit.is_file():
         raise SystemExit("Build the rev 4 core first")
     # Do not silently stage an earlier bitstream after editing the hardware.
-    sources = [*ROOT.glob("rtl/**/*"), *ROOT.glob("chisel/src/**/*"), ROOT / "build.mill"]
+    sources = [*ROOT.glob("rtl/**/*"), *ROOT.glob("chisel/src/**/*"), ROOT / "build.mill",
+               *ROOT.glob("framework/src/**/*.scala"), *ROOT.glob("framework/verilog/**/*"),
+               ROOT / "framework/package.mill", ROOT / "framework/scripts/build_core.py"]
     if any(p.is_file() and p.stat().st_mtime > bit.stat().st_mtime for p in sources):
         raise SystemExit("Bitstream is older than its sources; rebuild first")
     report = build / "MCR3-gamebub_rev4.runs/impl_1/top_handheld_timing_summary_routed.rpt"
@@ -44,12 +46,13 @@ def main():
         return
     sources = [(stage / name, f"cores/{core_id}/{name}") for name in
                ("core.json", "files.json", "settings.json", bit_name)]
-    for name, checksum in (("tapper", 0x0f584827), ("timber", 0x3f49e94e), ("domino", 0x085cde56)):
+    for name, checksum in (("tapper", 0x0f584827), ("timber", 0x3f49e94e), ("domino", 0x085cde56), ("shollow", 0xa2403144)):
         path = args.roms / (name + ".rom")
         data = path.read_bytes()
-        if len(data) != (0x1c000 if name == "domino" else 0x3a000) or zlib.crc32(data) != checksum:
+        if len(data) != (0x1c000 if name in ("domino", "shollow") else 0x3a000) or zlib.crc32(data) != checksum:
             raise SystemExit(f"Unexpected {name} ROM size/CRC")
-        sources.append((path, f"roms/MCR/{name.title()}.rom"))
+        label = "Satan's Hollow" if name == "shollow" else name.title()
+        sources.append((path, f"roms/MCR/{label}.rom"))
     prom = args.roms / "ssio.prom"
     if hashlib.sha256(prom.read_bytes()).hexdigest() != "4962a47f67ce0cebc655026efed495eb17fc29e7072650ecab2cecc4f16c06dc":
         raise SystemExit("Unexpected SSIO timing PROM")
@@ -60,19 +63,25 @@ Extract this ZIP at the root of your Game Bub SD card. Merge cores/ and
 roms/ with the existing folders. Launch Bally Midway MCR (alanswx.MCR).
 This installs beside the proven Bally Midway MCR3 core (alanswx.MCR3).
 
-Choose Tapper.rom, Timber.rom, or Domino.rom in roms/MCR.
+Choose Tapper.rom, Timber.rom, Domino.rom, or Satan's Hollow.rom in roms/MCR.
 ROM recognition selects MCR2 or MCR3 and the controls automatically.
 The required sound PROM is already in the core folder.
 
-All: D-pad move, Select coin, Start player 1.
+All: Select coin, Start player 1. Landscape games use D-pad movement.
 Tapper: A fill, R player 2 start (alternating).
 Timber: A axe right, B axe left. Single-player controls only.
 Domino Man: A swat, R player 2 start (alternating).
+Satan's Hollow: Left/right move, A fire, B shield, R player 2 start.
+Portrait games defaults to Upright: normal grip, tall picture with side borders.
+Sideways mode: turn the Bub clockwise; Down/Up become screen left/right.
+The firmware menu keeps its normal orientation.
 Picture defaults to 4:3. Startup double-reset correction is included.
-Version 0.2.1 restores MCR2's 18-source-pixel horizontal capture delay.
+Version 0.3.0 adds Satan's Hollow and optional portrait rotation.
+It retains MCR2's corrected 18-source-pixel horizontal capture delay.
 
-All three games run on hardware in the combined core. The user confirmed
-Domino Man's corrected alignment looks perfect and the other games look good.
+Tapper, Timber, and Domino Man worked in the previous hardware-confirmed build.
+This new portrait build needs an LCD/HDMI hardware retest, including the menu.
+It uses a local, optional framework rotation change; it is a private test.
 High scores are not saved. MCR1, scrolling games, and MCR3 Mono are not
 included yet. Other ROM revisions are not recognized.
 

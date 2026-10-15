@@ -185,3 +185,42 @@ Summary for the author:
 * **When a change is proven,** write the upstream description from that
   note, and give it to the user to send. Don't open pull requests or
   issues on `gamebub/framework` yourself.
+
+## 6. Portrait game rotation: concrete design
+
+The user authorized continuing the combined core with Satan's Hollow and
+requested both upright and sideways play, defaulting to upright because
+holding the Bub sideways may be awkward. The existing `displayRotate` is a
+board build parameter for the LCD mounting, not a runtime orientation
+control. A game-specific transform belongs in frame-store read addressing.
+
+Implement an optional `VideoTransformV0` interface with a two-bit rotation
+(0, 90 clockwise, 180, 90 counterclockwise). Cores that omit the interface
+retain exactly the original elaborated read path. For an opted-in core,
+rotate only the game layer; LCD mounting correction and firmware overlay
+remain as before. CDC the request coherently and latch it at an output
+frame boundary. Fit quarter-turn pictures to the screen using a constant
+rational scale: MCR's stored 320x240 becomes upright 240x320, displayed at
+360x480 on both LCD and HDMI. Rotation zero uses the legacy integer scale.
+This reuses both existing frame stores and adds no image memory. The only
+cost is address arithmetic, muxing, and a small control CDC. Expose the
+active requested transform as an additive informational register.
+
+This is useful for portrait MCR games (Satan's Hollow, Tron, MCR1) and for
+other arcade ports that emit a native sideways raster. Ordinary cores such
+as ColecoVision and Apple IIgs must elaborate identically without opting in.
+
+Tests: generate their baseline and modified Verilog and compare exactly;
+exercise the synthesized address mapper with asymmetric coordinate-coded
+images, all four rotations, both output scan axes, borders and read delay;
+check that runtime changes latch only on frame boundaries. Then route the
+MCR bitstream, recheck the existing games and capture Satan's Hollow.
+Changes stay on local feature branches for review. No remote fork, push,
+or public release is created by this work.
+
+Implementation is local framework commit `6e5adf7` on `feature/video-rotation`.
+The complete source change is also preserved in
+`docs/patches/framework-video-rotation.patch` for review/reproduction before
+any remote fork is created. Apply it to clean framework `db9d3b0` when the
+local feature commit is unavailable. `scripts/check_rotation.py --defaults`
+runs the mapper regression and checks unchanged-core elaboration.
