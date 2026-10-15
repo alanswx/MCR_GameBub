@@ -55,7 +55,8 @@ Two finished ports are the working templates; copy their patterns:
   A bitstream built on a modified framework
   falls under CERN-OHL-S (`framework/LICENSE`), so nothing built on it is
   released until the change is merged upstream, unless the user decides
-  otherwise.
+  otherwise. The user explicitly authorized the ROM-free v0.6.0 binary release
+  on 2026-10-15 after confirming speech on the device.
 * Imported upstream RTL is copied by a script with exact-text patches and
   never hand-edited. Record the upstream commit it came from.
 * Before starting each MCR board's port or refreshing its import, check
@@ -75,7 +76,8 @@ Two finished ports are the working templates; copy their patterns:
   synthesized file with roms". MiSTer distributes these bitstreams without
   ROMs. Settle the licence for this repo with the user before publishing
   bitstream releases. The user authorized public source publication under
-  the existing component notices; see `NOTICE.md`.
+  the existing component notices, and subsequently authorized a ROM-free
+  bitstream release with instructions and the HTML converter; see `NOTICE.md`.
 * Use the scratchpad or `scratch/` for temporary files, not `/tmp`.
 * Commit locally after each working step. The user authorized creating and
   pushing the public source repository `alanswx/MCR_GameBub`. Keep private

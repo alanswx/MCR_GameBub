@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Stage a local hardware-test SD-card folder; excludes ROMs and PROM data."""
+"""Stage the core, or package a ROM-free release or private hardware test."""
 import argparse
 import hashlib
 import json
@@ -15,9 +15,12 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--zip", type=Path, help="write a private SD-card test ZIP")
     parser.add_argument("--roms", type=Path, help="local folder containing the catalog ROMs and ssio.prom")
+    parser.add_argument("--release-zip", type=Path, help="write a public ROM-free release ZIP")
     args = parser.parse_args()
     if bool(args.zip) != bool(args.roms):
         parser.error("Use --zip and --roms together for the private test bundle")
+    if args.release_zip and (args.zip or args.roms):
+        parser.error("--release-zip cannot be combined with private bundle options")
     metadata = json.loads((ROOT / "metadata/core.json").read_text())
     core_id = metadata["metadata"]["id"]
     bit_name = metadata["bitstreams"][0]["filename"]
@@ -34,6 +37,32 @@ def main():
     report = build / "MCR3-gamebub_rev4.runs/impl_1/top_handheld_timing_summary_routed.rpt"
     if not report.is_file() or "All user specified timing constraints are met." not in report.read_text():
         raise SystemExit("A passing routed timing report is required")
+    if args.release_zip:
+        # Explicit allowlist: never recurse through the private SD staging folder.
+        sources = [(ROOT / "metadata" / name, f"cores/{core_id}/{name}") for name in
+                   ("core.json", "files.json", "settings.json")]
+        sources += [(bit, f"cores/{core_id}/{bit_name}"),
+                    (ROOT / "docs/RELEASE_README.md", "README.md"),
+                    (ROOT / "web/MCR-ROM-Builder.html", "MCR-ROM-Builder.html"),
+                    (ROOT / "NOTICE.md", "NOTICE.md"),
+                    (ROOT / "framework/LICENSE", "licenses/framework-LICENSE.txt"),
+                    (ROOT / "gamedb/games.tsv", "supported-games.tsv")]
+        sources += [(path, f"licenses/{path.name}") for path in sorted((ROOT / "licenses").glob("*.txt"))]
+        args.release_zip.parent.mkdir(parents=True, exist_ok=True)
+        with zipfile.ZipFile(args.release_zip, "w", zipfile.ZIP_DEFLATED) as archive:
+            for src, name in sources:
+                archive.write(src, name)
+            archive.writestr("SHA256SUMS.txt", "".join(
+                f"{hashlib.sha256(src.read_bytes()).hexdigest()}  {name}\n" for src, name in sources))
+        with zipfile.ZipFile(args.release_zip) as archive:
+            expected = {name for _, name in sources} | {"SHA256SUMS.txt"}
+            if set(archive.namelist()) != expected or archive.testzip() is not None:
+                raise SystemExit("Release ZIP integrity or allowlist check failed")
+            for src, name in sources:
+                if archive.read(name) != src.read_bytes():
+                    raise SystemExit(f"Release ZIP verification failed: {name}")
+        print(f"Verified ROM-free release ZIP: {args.release_zip.resolve()}")
+        return
     stage = ROOT / "build/sdcard/cores" / core_id
     stage.mkdir(parents=True, exist_ok=True)
     for name in ("core.json", "files.json", "settings.json"):

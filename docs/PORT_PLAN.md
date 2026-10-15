@@ -1008,3 +1008,25 @@ updated full-core testbench compiles/elaborates under Xsim as well
 (`build/speech_tb_compile.log`, `build/speech_tb_elaborate.log`). These are
 simulation results; handheld gameplay and listening remain a device test.
 The hardware-test ZIP was provided to the owner while checks finished.
+
+
+## 2026-10-15: device speech confirmation and public v0.6.0 packaging
+
+The owner reports speech sounds great and explicitly requests a ROM-free
+release with a README and standalone HTML converter. This authorizes the
+binary release using the published rotation framework fork. Preserve the
+exact tested bitstream built from 80ab288; hardware sources have not changed.
+The public packager uses an explicit file allowlist independent of private
+SD-card staging, and includes metadata, offline converter, installation and
+control instructions, supported-output catalog, component notices and hashes.
+No game ROM, SSIO PROM or sound sample is included. The owner also requests
+a separate private archive of their local MAME ZIPs for converter testing;
+that archive must never be uploaded to GitHub.
+
+Release checks pass: public ZIP integrity, exact allowlist and per-file
+SHA-256 verification; all core metadata and bitstream bytes match the
+owner-tested private v0.6.0 bundle. The private converter pack contains 18
+original MAME archives covering 19 supported games, plus the existing user
+PROM and standalone converter. After extracting that pack, the converter
+regression produces all 19 files byte-identical to their MRA references;
+renamed/missing/corrupt chip and malformed/export ZIP checks also pass.

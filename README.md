@@ -12,7 +12,7 @@ Tapper, Timber, Domino Man, and Satan's Hollow are hardware-confirmed.
 Both sideways directions and upright portrait video work on the device;
 the sideways grip remains awkward. Rotation is complete for now.
 Version 0.6.0 adds Environmental Discs of Tron with Squawk & Talk speech;
-this new port needs device gameplay and audio checks.
+the owner has confirmed its speech sounds great on the device.
 It retains the corrected Domino Man alignment and startup reset sequence.
 
 Select inserts a coin. Use Start for player 1 unless noted below. Controls are:
@@ -169,8 +169,12 @@ Verilator 5.052, but has shown boot differences from Xsim. Use Xsim for
 validation until that discrepancy is resolved.
 
 The bitstream is
-`build/MCR3-gamebub_rev4/MCR3-gamebub_rev4.bit`. No packaged release is
-available yet. Once the build passes routed timing, stage a local hardware
+`build/MCR3-gamebub_rev4/MCR3-gamebub_rev4.bit`. Download the ROM-free
+[v0.6.0 release](https://github.com/alanswx/MCR_GameBub/releases/tag/v0.6.0),
+which includes installation instructions and the offline HTML converter.
+To reproduce that package after a passing build, run
+`python3 scripts/package.py --release-zip build/MCR_GameBub_v0.6.0.zip`.
+See [the installation guide](docs/RELEASE_README.md). Stage a local hardware
 test with `python3 scripts/package.py`. Copy `build/sdcard/cores/alanswx.MCR`
 to your SD card's `cores/` folder (beside the original MCR3 core), put your
 `ssio.prom` inside it, and launch **Bally Midway MCR**. Choose
