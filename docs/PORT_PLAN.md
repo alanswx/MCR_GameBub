@@ -304,3 +304,43 @@ that works in any modern browser:
   `CLAUDE.md`).
 * When to create the GitHub repo and the framework fork.
 * Where to publish the HTML ROM builder.
+
+### Resumed implementation (2026-10-14)
+
+* MCR3 import and Tapper platform are implemented, using upstream commit
+  `1ec8944c939ba5fcb4bcdfc5dd3e051a6273d141`. The import manifest records
+  verification in UTC (2026-10-15); the earlier tables use local dates.
+  `python3 scripts/import_mcr.py --check` verifies all 14 imported files
+  against the clean source clone without refreshing the import.
+* `scripts/lint.sh --test` compiles/elaborates the full mixed-language core
+  with Vivado and tests the host, ROM routing, 10 ns SRAM, sprite deadlines,
+  and both B/C video modes with synthetic data. All platform tests pass.
+  The script is now executable. On this host Xsim needs execution outside
+  the Codex sandbox for its local IPC; sandbox startup itself is repaired.
+* The baseline is **Tapper only**, with 40 MHz system, 200 MHz SPI, and
+  28.571 MHz LCD clocks. Video is 320x240 RGB333, with either nearest-pixel
+  4:3 stretching or a centred 256-pixel picture. The framework is unchanged.
+* A required 32-byte `ssio.prom` is loaded as file 1. Upstream embeds this
+  sound timing PROM in VHDL; the import removes those bytes and exposes a
+  load port. It is not part of the MRA's index-0 ROM. For local testing,
+  the PROM is extracted from the upstream source into ignored `scratch/`.
+  No PROM bytes or game ROMs are committed. File 1 is consequently not yet
+  the planned NVRAM file: persistence, CRC game selection, other games,
+  controls card, and final file layout remain subsequent work.
+* NVRAM is cleared at platform reset; it is not saved. Controls currently
+  map Select to coin, Start to player 1, R to player 2, A to fill, and the
+  d-pad to movement. Firmware focus suppresses gameplay input.
+* `sim/run_tb.py` runs the full core with a functional 40 MHz clock and
+  both VHDL CPUs/sound chips. It streams local ROMs through the host,
+  models SRAM delay, checks every output frame, captures PPMs, and accepts
+  frame-numbered `--coin` / `--start` presses. Example:
+
+  ```sh
+  source scripts/env.sh
+  python3 sim/run_tb.py --frames 120 --dump 30
+  ```
+
+  Defaults: `scratch/roms/tapper.rom`, `scratch/roms/ssio.prom`, output
+  `scratch/tapper-frames/`. `--aspect 0` checks native width. Compilation
+  and execution can be separated with `--compile-only` / `--run-only`.
+  Full-core visual results and first bitstream results are pending.

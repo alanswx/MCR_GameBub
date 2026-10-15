@@ -1,0 +1,12 @@
+{
+  "metadata": {
+    "id": "alanswx.MCR3",
+    "name": "Bally Midway MCR3",
+    "author": "Alan Steremberg",
+    "version": "0.1.0",
+    "license": "See source notices"
+  },
+  "bitstreams": [
+    {"target": "gamebub_rev4", "filename": "MCR3-gamebub_rev4.bit"}
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "settings": [
+    {"id": 0, "label": "Reset", "address": "0x100", "type": "action", "value": "0x1"},
+    {"id": 1, "label": "Picture", "address": "0x200", "type": "list", "default": "0x1",
+     "items": [{"label": "4:3", "value": "0x1"}, {"label": "Native width", "value": "0x0"}]},
+    {"id": 2, "label": "Volume", "address": "0x204", "type": "list", "default": "0x0",
+     "items": [{"label": "Normal", "value": "0x0"}, {"label": "2x", "value": "0x1"}]},
+    {"id": 3, "label": "Service", "address": "0x208", "type": "list", "default": "0x0",
+     "items": [{"label": "Off", "value": "0x0"}, {"label": "On", "value": "0x1"}]}
+  ]
+}

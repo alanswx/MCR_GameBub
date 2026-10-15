@@ -1,0 +1,41 @@
+#!/usr/bin/env python3
+"""Mixed-language compile/elaboration; --test also runs platform regressions."""
+import argparse
+import os
+from pathlib import Path
+import subprocess
+from import_mcr import FILES, ROOT
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--test", action="store_true")
+    args = parser.parse_args()
+    work = ROOT / "build/check"
+    work.mkdir(parents=True, exist_ok=True)
+
+    def run(name, command):
+        log = work / f"{name}.log"
+        with log.open("w") as output:
+            result = subprocess.run(command, cwd=work, stdout=output, stderr=subprocess.STDOUT)
+        if result.returncode:
+            print(log.read_text()[-12000:])
+            raise SystemExit(f"{name} failed: {log}")
+        print(f"{name}: passed ({log.relative_to(ROOT)})", flush=True)
+
+    run("vhdl", ["xvhdl", *[str(ROOT / "rtl/mcr3" / Path(f).with_suffix(".vhdl")) for f in FILES]])
+    sv = sorted(str(p) for p in (ROOT / "rtl/gamebub").glob("*.sv"))
+    run("sv", ["xvlog", "--sv", *sv, str(Path(os.environ["XILINX_VIVADO"]) / "data/verilog/src/glbl.v")])
+    run("elaborate", ["xelab", "-L", "unisims_ver", "-L", "unimacro_ver",
+                       "--timescale", "1ns/1ps", "work.mcr3_gamebub", "work.glbl", "-s", "mcr3_check"])
+    if args.test:
+        run("test_compile", ["xvlog", "--sv", str(ROOT / "sim/tb_platform.sv")])
+        run("test_elaborate", ["xelab", "--timescale", "1ns/1ps", "work.tb_platform", "-s", "platform_test"])
+        run("test_run", ["xsim", "platform_test", "--runall"])
+        if "PLATFORM PASS" not in (work / "test_run.log").read_text():
+            raise SystemExit("Platform test did not reach its success marker")
+    print("MCR3 mixed-language checks passed.")
+
+
+if __name__ == "__main__":
+    main()
