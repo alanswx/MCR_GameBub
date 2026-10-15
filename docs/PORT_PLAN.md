@@ -18,6 +18,36 @@ admin of all four.
 | 3 | `alanswx.MCR2` | `Arcade-MCR2_MiSTer` `6a8c78f` | Domino Man, Wacko, Two Tigers (horizontal); Tron, Satan's Hollow, Kozmik Krooz'r (vertical) |
 | 4 | `alanswx.MCR1` | `Arcade-MCR1_MiSTer` `1621677` | Kick, Solar Fox (vertical) |
 
+### Upstream freshness requirement
+
+Start each board's port from the newest source on its official
+`MiSTer-devel` default branch. Recheck the live remote before each initial
+import or import refresh; the revisions below are a dated verification,
+not permanent pins. Check the remote with this command (substitute the
+board name):
+
+```sh
+git ls-remote --symref https://github.com/MiSTer-devel/Arcade-MCR3_MiSTer.git HEAD
+```
+
+Require a clean source clone whose HEAD matches, and record
+the full revision in the import manifest. If a clone is behind, fetch and
+fast-forward it before importing; preserve any local changes or divergent
+history rather than resetting them.
+
+Verified **2026-10-14** directly against GitHub: all four default branches
+are `master`, and all four local clones are clean and match the live HEAD.
+No source updates were needed.
+
+| Upstream repository | Verified full commit |
+|---|---|
+| [Arcade-MCR3_MiSTer](https://github.com/MiSTer-devel/Arcade-MCR3_MiSTer) | `1ec8944c939ba5fcb4bcdfc5dd3e051a6273d141` |
+| [Arcade-MCR3Mono_MiSTer](https://github.com/MiSTer-devel/Arcade-MCR3Mono_MiSTer) | `6c82a4bc9a830b05a94a780c0c3091167b98a9b8` |
+| [Arcade-MCR2_MiSTer](https://github.com/MiSTer-devel/Arcade-MCR2_MiSTer) | `6a8c78f91229339306834d53bebf3434aefedf61` |
+| [Arcade-MCR1_MiSTer](https://github.com/MiSTer-devel/Arcade-MCR1_MiSTer) | `16216779fd849f37b5541339790a7452817a77d0` |
+
+### Core scope
+
 * Name "Bally Midway MCR3" (etc.), author "Alan Steremberg"; confirm the
   ids and names with the user.
 * Best on a d-pad: Tapper, Timber, Rampage, Domino Man. The rest want a

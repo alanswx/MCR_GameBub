@@ -54,6 +54,13 @@ Two finished ports are the working templates; copy their patterns:
   otherwise.
 * Imported upstream RTL is copied by a script with exact-text patches and
   never hand-edited. Record the upstream commit it came from.
+* Before starting each MCR board's port or refreshing its import, check
+  the live default-branch HEAD at `MiSTer-devel/Arcade-MCR*_MiSTer` with
+  `git ls-remote --symref`. Start from that newest commit, not an old
+  planning pin or a cached remote-tracking ref. Verify the source clone
+  is clean and its HEAD matches; if behind, fetch and fast-forward it
+  without altering upstream source files. Record the full commit and
+  verification date in `docs/PORT_PLAN.md` and the import manifest.
 * No `` `include `` or `` `define `` reliance in `rtl/`; `.vhd` must become
   `.vhdl` (the build only collects `.v/.sv/.vhdl/.xdc`, and collects every
   one of them under `rtl/` for every core class); only RTL and `.xdc`
