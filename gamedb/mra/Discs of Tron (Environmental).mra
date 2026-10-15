@@ -1,0 +1,73 @@
+<misterromdescription>
+  <name>Discs of Tron (Environmental)</name>
+  <region />
+  <homebrew>no</homebrew>
+  <bootleg>no</bootleg>
+  <version />
+  <alternative />
+  <platform>Midway MCR3</platform>
+  <series>Tron</series>
+  <year>1983</year>
+  <manufacturer>Bally</manufacturer>
+  <manufacturer>Midway</manufacturer>
+  <category>Sports</category>
+  <setname>dotrone</setname>
+  <parent>dotron</parent>
+  <mameversion>0218</mameversion>
+  <rbf>mcr3</rbf>
+  <about>Environmental (sit-down) cabinet. Unlike the upright, this PCB carries
+	a Bally Squawk &amp; Talk speech board (MC6802 + 2x PIA6821 + TMS5200 + AD558).
+	Part names follow the MERGED dotron.zip layout (clone ROMs under a dotrone/
+	prefix, shared gfx at the root), matching the same era as the upright MRA
+	alongside it. CRCs are MAME-verified.</about>
+  <resolution>15kHz</resolution>
+  <rotation>horizontal</rotation>
+  <flip />
+  <players>1</players>
+  <joystick>8-way</joystick>
+  <special_controls />
+  <num_buttons>4</num_buttons>
+  <buttons default="A,B,X,Y,R,L,Start,Select" names="Toss,Deflect,Aim Up,Aim Down,Rotate Right,Rotate Left,Start1+Coin,Start2+Coin" />
+  <switches default="FF,00">
+    <dip bits="0" ids="2,1" name="Coin Meters" />
+    <dip bits="8" ids="Off,On" name="Service" />
+  </switches>
+  <rom index="1">
+    <part>04</part>
+  </rom>
+  <rom index="0" zip="dotron.zip" md5="979cb63d85f917cdae2179c515111a24">
+    <part crc="eee31b8c" name="dotrone/loc-cpu1" />
+    <part crc="75ba6ad3" name="dotrone/loc-cpu2" />
+    <part crc="94bb1a0e" name="dotrone/loc-cpu3" />
+    <part crc="c137383c" name="dotrone/loc-cpu4" />
+    <part crc="2de6a8a8" name="dotrone/loc-a" />
+    <part crc="4097663e" name="dotrone/loc-b" />
+    <part crc="f576b9e7" name="dotrone/loc-c" />
+    <part crc="74b0059e" name="dotrone/loc-d" />
+    <part crc="57a2b1ff" name="loc-g.cp4" />
+    <part crc="3bb4d475" name="loc-h.cp3" />
+    <part crc="57a2b1ff" name="loc-g.cp4" />
+    <part crc="3bb4d475" name="loc-h.cp3" />
+    <part crc="ce957f1a" name="loc-e.cp6" />
+    <part crc="d26053ce" name="loc-f.cp5" />
+    <part crc="ce957f1a" name="loc-e.cp6" />
+    <part crc="d26053ce" name="loc-f.cp5" />
+    <part crc="ef45d146" name="loc-c.cp8" />
+    <part crc="5e8a3ef3" name="loc-d.cp7" />
+    <part crc="ef45d146" name="loc-c.cp8" />
+    <part crc="5e8a3ef3" name="loc-d.cp7" />
+    <part crc="b35f5374" name="loc-a.cp0" />
+    <part crc="565a5c48" name="loc-b.cp9" />
+    <part crc="b35f5374" name="loc-a.cp0" />
+    <part crc="565a5c48" name="loc-b.cp9" />
+    <part crc="40167124" name="loc-bg2.6f" />
+    <part crc="40167124" name="loc-bg2.6f" />
+    <part crc="bb2d7a5d" name="loc-bg1.5f" />
+    <part crc="bb2d7a5d" name="loc-bg1.5f" />
+    <part repeat="4096">00</part>
+    <part crc="c3d0f762" name="dotrone/pre.u3" />
+    <part crc="7ca79b43" name="dotrone/pre.u4" />
+    <part crc="24e9618e" name="dotrone/pre.u5" />
+  </rom>
+  <remark />
+</misterromdescription>

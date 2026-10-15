@@ -30,7 +30,7 @@ def main():
     args = p.parse_args()
     game = games[args.game]
     if args.mra is None:
-        args.mra = ROOT.parent / f"Arcade-MCR{game['family']}_MiSTer/releases" / game["mra"]
+        args.mra = (ROOT / game['mra_local']) if game.get('mra_local') else ROOT.parent / f"Arcade-MCR{game['family']}_MiSTer/releases" / game["mra"]
     if args.prom:
         data = args.prom.read_bytes()
     else:

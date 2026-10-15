@@ -63,7 +63,7 @@ Extract this ZIP at the root of your Game Bub SD card. Merge cores/ and
 roms/ with the existing folders. Launch Bally Midway MCR (alanswx.MCR).
 This installs beside the proven Bally Midway MCR3 core (alanswx.MCR3).
 
-Choose any of the 18 game ROMs in roms/MCR.
+Choose any of the 19 game ROMs in roms/MCR.
 ROM recognition selects MCR1, MCR2, MCR3 or MCR3 Mono and the controls automatically.
 The required sound PROM is already in the core folder.
 
@@ -82,7 +82,7 @@ Picture defaults to Auto: native width for MCR1's nearly square picture,
 4:3 for the other boards. Manual overrides remain available.
 If an older picture override was saved, choose Picture -> Auto once.
 Startup double-reset correction is included.
-Version 0.5.0 configures 18 games across MCR1, MCR2, MCR3 and MCR3 Mono.
+Version 0.6.0 configures 19 games across MCR1, MCR2, MCR3 and MCR3 Mono.
 Tron: D-pad move, A fire, L/R spinner. Start+R starts player 2.
 Two Tigers (Tron Conversion): Left/Right turn, A shoot, B bomb, X dogfight.
 L/R also turn; Start+R starts player 2. Player 2's controls are inactive.
@@ -90,8 +90,9 @@ Wacko: D-pad trackball, A right/B down/X up/Y left to shoot.
 Kozmik Krooz'r: D-pad ship, A fire, B shield, L/R turret; Start+R starts P2.
 Discs of Tron: D-pad move, A toss, B deflect, X/Y aim up/down, L/R rotate.
 Start+R starts player 2 in Discs of Tron.
-Discs of Tron uses the upright ROM set: no speech. The Environmental
-version's separate Squawk & Talk speech board is not implemented.
+Discs of Tron (upright) has no speech. Choose Discs of Tron (Environmental)
+for the Squawk & Talk speech board. Controls are the same; insert a coin
+and start a game to hear the greeting. No firmware update is required.
 Journey: D-pad move, A fire, R start player 2. Normal sound is included;
 the separate Separate Ways music sample is not implemented yet.
 Kick: Left/Right or L/R trackball, A kick, B faster movement; Start+R starts P2.

@@ -15,6 +15,23 @@
     "prefix_crc32": "fccebe1a"
   },
   {
+    "key": "dotrone",
+    "name": "Discs of Tron (Environmental)",
+    "family": 3,
+    "mod": 4,
+    "mra": "Discs of Tron (Environmental).mra",
+    "mra_local": "gamedb/mra/Discs of Tron (Environmental).mra",
+    "md5": "979cb63d85f917cdae2179c515111a24",
+    "size": 253952,
+    "portrait": false,
+    "dips": 255,
+    "crc32": "59674db7",
+    "family_id": 2,
+    "sg": false,
+    "prefix_crc32": "aabe522c",
+    "mame_zip": "dotron.zip"
+  },
+  {
     "key": "journey",
     "name": "Journey",
     "family": 3,

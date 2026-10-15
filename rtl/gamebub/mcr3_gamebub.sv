@@ -66,6 +66,10 @@ module mcr3_gamebub (
     wire game_timber, game_mcr2, game_shollow, game_portrait, game_sg, load_sg;
     wire [1:0] game_family, load_family;
     wire [2:0] game_mod;
+    wire game_speech = game_family == 2 && game_mod == 4;
+    wire [13:0] speech_addr;
+    wire [7:0] speech_data, m3_output4;
+    wire signed [15:0] speech_audio;
     wire [1:0] portrait_mode;
     // Grip CW uses the raw raster; the opposite grip needs a half-turn.
     assign videoTransform_rotation = !game_portrait ? 2'd0 :
@@ -122,6 +126,7 @@ module mcr3_gamebub (
     wire [4:0] prom_addr;
     wire dl_wr, dl_nvram, dl_nvram_wr, prom_wr;
     gb_mcr_memory memory (
+        .game_speech(game_speech), .speech_addr(speech_addr), .speech_data(speech_data),
         .game_family(game_family), .load_family(load_family), .game_sg(game_sg), .load_sg(load_sg),
         .mono_dl_addr(mono_dl_addr), .mono_dl_wr(mono_dl_wr), .mono_sound_data(mono_sound_data),
         .game_mcr2(game_mcr2), .m2_dl_addr(m2_dl_addr), .m2_dl_wr(m2_dl_wr),
@@ -162,19 +167,32 @@ module mcr3_gamebub (
     wire [9:0] mono_audio;
     wire m2_hb, m2_vb, m2_ce, m3_hb, m3_vb, m3_ce;
     wire [15:0] m2_left, m2_right, m3_left, m3_right;
+    wire signed [17:0] speech_mix_l = $signed({2'b00,m3_left}) + $signed({{2{speech_audio[15]}},speech_audio});
+    wire signed [17:0] speech_mix_r = $signed({2'b00,m3_right}) + $signed({{2{speech_audio[15]}},speech_audio});
+    wire [15:0] m3_mixed_l = !game_speech ? m3_left : speech_mix_l[17] ? 16'h0000 : speech_mix_l[16] ? 16'hffff : speech_mix_l[15:0];
+    wire [15:0] m3_mixed_r = !game_speech ? m3_right : speech_mix_r[17] ? 16'h0000 : speech_mix_r[16] ? 16'hffff : speech_mix_r[15:0];
     assign {r,g,b,hb,vb,ce,left,right} = game_family == 0 ?
         {m1_r[3:1],m1_g[3:1],m1_b[3:1],m1_hb,m1_vb,m1_ce,m1_left,m1_right} : game_family == 3 ?
         {mono_r,mono_g,mono_b,mono_hb,mono_vb,mono_ce,mono_audio,6'd0,mono_audio,6'd0} : game_mcr2 ?
         {m2_r,m2_g,m2_b,m2_hb,m2_vb,m2_ce,m2_left,m2_right} :
-        {m3_r,m3_g,m3_b,m3_hb,m3_vb,m3_ce,m3_left,m3_right};
+        {m3_r,m3_g,m3_b,m3_hb,m3_vb,m3_ce,m3_mixed_l,m3_mixed_r};
+    squawk_n_talk speech (
+        .clk(clk_sys), .reset(machine_reset || !game_speech),
+        .sound_select(m3_output4[3:0]), .sound_int(m3_output4[4]),
+        .dbg_in2(input_2), .dbg_op4(m3_output4),
+        .rom_addr(speech_addr), .rom_do(speech_data), .audio_out(speech_audio),
+        .active(), .seen(), .cpu_run(), .progress(), .pia_loose(),
+        .tms_audio_nz(), .dac_written(), .dbg_dac(), .dbg_cpu_addr(),
+        .dbg_tms_wsn(), .dbg_tms_rsn()
+    );
     mcr3 machine (
         .clock_40(clk_sys), .reset(machine_reset || game_family != 2), .tv15Khz_mode(1'b0),
         .video_r(m3_r), .video_g(m3_g), .video_b(m3_b), .video_csync(),
         .video_hblank(m3_hb), .video_vblank(m3_vb), .video_hs(), .video_vs(),
-        .video_ce(m3_ce), .video_hflip(game_mod == 2), .video_vflip(1'b0),
+        .video_ce(m3_ce), .video_hflip(game_mod == 2 || game_mod == 4), .video_vflip(1'b0),
         .separate_audio(1'b0), .audio_out_l(m3_left), .audio_out_r(m3_right),
         .input_0(input_0), .input_1(input_1), .input_2(input_2),
-        .input_3(input_3), .input_4(input_4), .output_4(), .mcr2p5(game_mod == 3), .hcntout(),
+        .input_3(input_3), .input_4(input_4), .output_4(m3_output4), .mcr2p5(game_mod == 3), .hcntout(),
         .cpu_rom_addr(m3_cpu_addr), .cpu_rom_do(cpu_data),
         .snd_rom_addr(m3_sound_addr), .snd_rom_do(sound_data),
         .sp_addr(m3_sprite_addr), .sp_graphx32_do(sprite_data),

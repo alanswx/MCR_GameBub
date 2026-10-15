@@ -233,6 +233,11 @@ module tb_gamebub;
                 btn[10] = number >= coin_frame && number < coin_frame+6 && coin_frame >= 0;
                 btn[11] = number >= start_frame && number < start_frame+6 && start_frame >= 0;
                 if (number == frames) begin
+                    if($test$plusargs("require_speech")) begin
+                        if(!dut.game_speech || !dut.speech.tms_audio_nz || !dut.speech.pia_loose)
+                            $fatal(1,"Game did not issue audible Environmental speech");
+                        $display("IN-GAME SPEECH PASS: Environmental ROM issued commands and TMS5200 produced audio");
+                    end
                     if(audio_unknown_cycles != 0) $fatal(1,"Undefined audio after startup: %0d cycles",audio_unknown_cycles);
                     if (unknown_pixels != 0) $fatal(1, "Final frame has %0d unknown pixels", unknown_pixels);
                     if (!defined_visible_frame) $fatal(1, "No fully defined visible frame during startup");

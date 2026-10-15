@@ -1,7 +1,7 @@
 # Bally Midway MCR for Game Bub
 
 Work in progress: **one combined MCR core on Game Bub rev 4**,
-with 18 official MRA game sets across MCR1, MCR2, MCR3 and MCR3 Mono configured. Choose a `.rom` from the
+with 19 configured MRA game sets across MCR1, MCR2, MCR3 and MCR3 Mono configured. Choose a `.rom` from the
 file browser; CRC32 recognition selects the board, controls, DIP defaults
 and portrait orientation automatically. Stock MRA index-0 outputs are
 listed in [the game catalog](gamedb/games.tsv); [games.json](gamedb/games.json)
@@ -11,7 +11,8 @@ Unknown or damaged images are rejected.
 Tapper, Timber, Domino Man, and Satan's Hollow are hardware-confirmed.
 Both sideways directions and upright portrait video work on the device;
 the sideways grip remains awkward. Rotation is complete for now.
-Version 0.5.0 enables fourteen more games, which need device gameplay checks.
+Version 0.6.0 adds Environmental Discs of Tron with Squawk & Talk speech;
+this new port needs device gameplay and audio checks.
 It retains the corrected Domino Man alignment and startup reset sequence.
 
 Select inserts a coin. Use Start for player 1 unless noted below. Controls are:
@@ -27,6 +28,7 @@ Select inserts a coin. Use Start for player 1 unless noted below. Controls are:
 | Wacko | D-pad trackball; A zap right, B down, X up, Y left; R start player 2 |
 | Kozmik Krooz'r | D-pad ship, A fire, B shield, L/R turret |
 | Discs of Tron | D-pad move, A toss, B deflect, X/Y aim up/down, L/R rotate |
+| Discs of Tron (Environmental) | Same controls as upright, with speech |
 | Journey | D-pad move, A fire, R start player 2 |
 | Kick | Left/Right or L/R trackball, A kick, B faster movement; Start+R starts P2 |
 | Solar Fox | D-pad move, A fire, B speed/select, also used to start |
@@ -41,11 +43,11 @@ Tron, Two Tigers, Kozmik Krooz'r and Discs of Tron use **Start+R** for
 player 2 start, leaving R available for rotation during play. Spinner and
 trackball buttons are substitutes for the arcade controls. Journey has its
 normal SSIO sound; its separate *Separate Ways* music sample is not yet
-implemented. Discs of Tron uses the upright ROM set, without speech; the
-Environmental version's Squawk & Talk board is not implemented in this port.
-The existing implementation is in the
-[MCR3 speech branch](https://github.com/alanswx/Arcade-MCR3_MiSTer/tree/squawk-n-talk-speech)
-and has not been merged upstream. High scores
+implemented. Upright Discs of Tron has no speech. Choose **Discs of Tron
+(Environmental)** for the Squawk & Talk board, ported from your
+[MCR3 speech branch](https://github.com/alanswx/Arcade-MCR3_MiSTer/tree/squawk-n-talk-speech).
+Insert a coin and start a game to hear its greeting. The optional cabinet
+backdrop from that branch is not included. No firmware update is needed. High scores
 are not saved. MCR3 Mono provides player 1 controls only. Rampage and Power Drive use
 coin and action buttons to join, as on the arcade. Scrolling MCR hardware
 is a separate integration.
@@ -73,12 +75,16 @@ it in a current browser. Drop your MAME ZIPs onto it to download verified
 `.rom` files, or an SD-folder ZIP with games under `roms/MCR/`. Everything
 runs locally, including decompression; there are no uploads or external
 scripts. Parent and merged sets can be supplied together. The page supports
-the 18 catalog sets, not arbitrary MAME revisions.
+the 19 catalog sets, not arbitrary MAME revisions.
 
 Keep `ssio.prom` from your core installation, or supply your own matching
 32-byte PROM to the page. The builder can also find it in a supplied ROM
 ZIP. Install the core separately; the builder's ZIP contains game data and
 the PROM when provided. Journey's separate music sample is not included.
+
+Environmental Discs uses the checked-in recipe under `gamedb/mra/` and
+the Environmental chips from a merged `dotron.zip`. Its speech ROMs are
+appended to the game file, so there is no separate speech download.
 
 For command-line preparation instead:
 
@@ -92,7 +98,7 @@ python3 tools/prepare_mcr3.py --game tapper \
 ```
 
 Repeat with `--game` set to `timber`, `domino`, `shollow`, `tron`,
-`twotiger`, `wacko`, `kroozr`, `dotron`, `journey`, `kick`, `solarfox`,
+`twotiger`, `wacko`, `kroozr`, `dotron`, `dotrone`, `journey`, `kick`, `solarfox`,
 `rampage`, `sarge`, `powerdrv`, `maxrpm`, `demoderm` or `stargrds`, supplying that game's
 local zip. The MCR2 games need the sibling `Arcade-MCR2_MiSTer` clone too.
 MCR1 and Mono games need their respective source clones. Demolition Derby
@@ -125,6 +131,7 @@ source scripts/env.sh
 python3 scripts/import_mcr.py --check
 python3 scripts/import_mcr2.py --check
 python3 scripts/import_remaining.py --check
+python3 scripts/import_speech.py --check
 python3 tools/generate_gamedb.py --check
 scripts/lint.sh --test
 python3 scripts/check_rotation.py --defaults
@@ -166,16 +173,16 @@ test with `python3 scripts/package.py`. Copy `build/sdcard/cores/alanswx.MCR`
 to your SD card's `cores/` folder (beside the original MCR3 core), put your
 `ssio.prom` inside it, and launch **Bally Midway MCR**. Choose
 any ROM from `roms/MCR` when launching the core. The private ZIP includes
-all 18 configured game sets, a controls guide and the required SSIO PROM.
+all 19 configured game sets, a controls guide and the required SSIO PROM.
 
 For a private SD-card ZIP containing your local ROMs and PROM:
 
 ```sh
 python3 scripts/package.py --roms scratch/roms \
-  --zip build/MCR_GameBub_games_v0.5.0.zip
+  --zip build/MCR_GameBub_games_v0.6.0.zip
 ```
 
-The ZIP includes only this core, all 18 catalog ROMs, the PROM, installation notes,
+The ZIP includes only this core, all 19 catalog ROMs, the PROM, installation notes,
 and checksums. It leaves existing settings and other cores untouched.
 It contains local ROM data and is not a public release.
 
@@ -191,7 +198,10 @@ python3 tools/generate_rom_builder.py --check
 python3 tools/check_rom_builder.py --browser
 ```
 
-Regeneration requires the four sibling MiSTer source clones. Its tests also
+Regeneration requires the four sibling MiSTer source clones. The optional
+speech import check also requires the feature branch clone in
+`scratch/upstream-speech` (`git clone --depth 1 --branch squawk-n-talk-speech
+https://github.com/alanswx/Arcade-MCR3_MiSTer.git scratch/upstream-speech`). Its tests also
 require your local MAME ZIPs and reference `.rom` files; use `--mame-dir`
 and `--reference-dir` to select them. The browser check uses Chrome/Chromium,
 Node, and Python's `websocket-client` package. No ROM data enters the HTML.

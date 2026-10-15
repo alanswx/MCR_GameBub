@@ -28,7 +28,7 @@ def main():
     script = html.split('<script>\n', 1)[1].split('</script>', 1)[0]
     cases = []
     for game in json.loads((ROOT / 'gamedb/games.json').read_text()):
-        path = args.mame_dir / (game['key'] + '.zip')
+        path = args.mame_dir / game.get('mame_zip', game['key'] + '.zip')
         reference = args.reference_dir / (game['key'] + '.rom')
         data = reference.read_bytes()
         if hashlib.md5(data).hexdigest() != game['md5']:
@@ -82,8 +82,8 @@ console.log('PASS renamed CRC matching, missing/corrupt chips, malformed ZIPs, S
         (folder / 'test.cjs').write_text(test)
         subprocess.run(['node', 'test.cjs'], cwd=folder, check=True)
         with zipfile.ZipFile(folder / 'export.zip') as archive:
-            if archive.testzip() is not None or len(archive.namelist()) != 18:
-                raise SystemExit('Export is not a valid 18-file ZIP')
+            if archive.testzip() is not None or len(archive.namelist()) != len(cases):
+                raise SystemExit('Export file count or ZIP integrity is invalid')
         if args.browser:
             browser = shutil.which('google-chrome') or shutil.which('chromium')
             if not browser:
@@ -111,7 +111,7 @@ try {
    await new Promise(resolve=>setTimeout(resolve,10));
  }
  const links=document.querySelectorAll('#games a[download]');
- if(links.length!==18||document.getElementById('save').disabled)throw Error('File upload UI did not prepare all 18 games');
+ if(links.length!==cases.length||document.getElementById('save').disabled)throw Error('File upload UI did not prepare all configured games');
  const promBytes=Uint8Array.from(atob(PROM_BASE64),c=>c.charCodeAt(0));
  const promUpload=new DataTransfer();promUpload.items.add(new File([promBytes],'ssio.prom'));
  input.files=promUpload.files;input.dispatchEvent(new Event('change'));
@@ -124,7 +124,7 @@ try {
  if(!document.getElementById('notice').textContent.includes('Sound timing PROM ready'))throw Error('PROM ZIP extraction failed');
  input.files=upload.files;input.dispatchEvent(new Event('change'));
  for(let n=0;n<1000&&input.disabled;n++)await new Promise(resolve=>setTimeout(resolve,10));
- const done=document.createElement('pre');done.id='test-result';done.textContent='BROWSER PASS: '+verified+' native Deflate/CRC/SHA matches; 18-game upload UI; PROM upload and ZIP extraction';document.body.append(done);
+ const done=document.createElement('pre');done.id='test-result';done.textContent='BROWSER PASS: '+verified+' native Deflate/CRC/SHA matches; catalog upload UI; PROM upload and ZIP extraction';document.body.append(done);
 }catch(error){const done=document.createElement('pre');done.id='test-result';done.textContent='BROWSER FAIL: '+error.stack;document.body.append(done);}
 })();
 '''.replace('CASES', json.dumps(browser_cases)).replace('PROM_BASE64', json.dumps(base64.b64encode((args.reference_dir / 'ssio.prom').read_bytes()).decode()), 1)

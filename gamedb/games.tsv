@@ -1,6 +1,7 @@
 # Generated from games.json by tools/generate_gamedb.py.
 # crc32	family	mod	DIP defaults	name	MRA MD5
 1bbba959	MCR3	2	FF 00	Discs of Tron	e05333f8e3385387b336252269e64e45
+59674db7	MCR3	4	FF 00	Discs of Tron (Environmental)	979cb63d85f917cdae2179c515111a24
 a1b44dd6	MCR3	3	FF 00	Journey	95d0859c7922308b094486d0d624c727
 0f584827	MCR3	0	FF 00	Tapper	7300967c61a0f1b887c12f3989e500bb
 3f49e94e	MCR3	1	FF 00	Timber	87b3b4c330d79006b148d182885107b2

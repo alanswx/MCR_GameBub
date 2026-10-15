@@ -19,6 +19,7 @@ from check_rtl import main as check_rtl
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--trace-cpu", action="store_true")
+    p.add_argument("--require-speech", action="store_true", help="require actual in-game Environmental speech")
     p.add_argument("--orientation-only", action="store_true", help="check all grip requests after ROM detection, then stop")
     p.add_argument("--backend", choices=("xsim", "verilator"), default="xsim")
     p.add_argument("--rom", type=Path, default=Path("scratch/roms/tapper.rom"))
@@ -65,7 +66,7 @@ def main():
             "--timescale", "1ns/1ps", "work.tb_gamebub", "work.glbl", "-s", "gamebub_test"])
     if args.compile_only:
         return
-    for name, sizes in (("rom", (0x1a000, 0x1c000, 0x3a000, 0x48000, 0x80000)), ("prom", (32,))):
+    for name, sizes in (("rom", (0x1a000, 0x1c000, 0x3a000, 0x3e000, 0x48000, 0x80000)), ("prom", (32,))):
         path = (ROOT / getattr(args, name)).resolve()
         if not path.is_file() or path.stat().st_size not in sizes:
             p.error(f"{name} must be a file of size {sizes}: {path}")
@@ -81,6 +82,8 @@ def main():
         command += ["--testplusarg", "orientation_only"] if args.backend == "xsim" else ["+orientation_only"]
     if args.trace_cpu:
         command += ["--testplusarg", "trace_cpu"] if args.backend == "xsim" else ["+trace_cpu"]
+    if args.require_speech:
+        command += ["--testplusarg", "require_speech"] if args.backend == "xsim" else ["+require_speech"]
     checksum = zlib.crc32(args.rom.read_bytes())
     import json
     games = json.loads((ROOT / "gamedb/games.json").read_text())

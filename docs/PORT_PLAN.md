@@ -916,3 +916,42 @@ and additional archive formats. Checks cover 21 excluded paths and 11
 permitted source paths, including the HTML and MRA recipes. The source
 provenance notice preserves component terms without inventing a blanket
 licence for imported code.
+
+### Environmental Discs of Tron / Squawk & Talk port (0.6.0)
+
+The user authorized merging the existing speech implementation into Game
+Bub. Live verification still finds official MCR3 master at `1ec8944c939b`
+and the speech feature branch at `09c8a26ee6e2c828f8cb12cd1b317235c758bcd1`.
+`scripts/import_speech.py` imports that clean branch's jt680x, shared PIA
+interface, TMS5200 and speech board with reproducible adaptations. CPU/chip
+control tables are inlined; Altera-only JTAG blocks are omitted. CPU control
+signals are declared before the expanded control-store code to prevent
+implicit-net truncation/redeclaration. TMS flop/SRL zero power-up values are
+explicit, preserving the source's nonzero noise LFSR and initialized tables;
+this matches Vivado's default INIT and prevents startup X from contaminating
+the reconstruction IIR in four-state simulation. No game bytes are embedded.
+
+The nineteenth catalog entry is `dotrone`, MCR3 mod 4, size 0x3e000, full CRC
+`59674db7`, prefix CRC `aabe522c`, MD5 `979cb63d85f917cdae2179c515111a24`.
+Its checked-in MRA derives from the feature branch's index-0 recipe without
+the unrelated inline cabinet artwork. Local `mra-tools-c` output matches the
+catalog. The offline builder and CLI preparation tool accept this local
+recipe. Its main program and SSIO revisions differ from upright `dotron`.
+
+The speech ROM extension at file 0x3a000..0x3dfff loads into SRAM words
+0xa000..0xbfff, avoiding additional ROM BRAM. Only Environmental mode adds a
+fourth runtime read slot; the other games retain their three-slot scheduler.
+Both sprite halves, SSIO and speech still meet eight-clock deadlines for
+all four phases and boundary/byte-lane probes. The Environmental input strap
+is IP2 bit 7 low; spinner/start-chord mapping and horizontal flip match the
+upright. SSIO OP4 drives the board command/strobe inputs. The source's 5/6
+MC6802 enable correction, TMS cadence/filter and saturated audio mixing are
+retained. Existing SSIO/audio/video routes bypass speech for other games.
+
+The complete mixed-language platform, raster, control, memory-layout and
+family-reset regressions pass. The 19-game browser builder comparison passes
+byte-for-byte/MRA MD5 and native Chrome UI/decompression checks. Four-state
+real-firmware speech/reference, in-game command generation, routed timing
+and handheld validation are being checked separately; these are not implied
+by the platform/recipe tests. Journey's sampled music and the optional
+cabinet backdrop remain outside this speech port.

@@ -2,6 +2,7 @@
 module gb_mcr_game #(
     parameter PREFIX = 0,
     parameter [31:0] DOTRON_CRC32 = 32'h1bbba959,
+    parameter [31:0] DOTRONE_CRC32 = 32'h59674db7,
     parameter [31:0] JOURNEY_CRC32 = 32'ha1b44dd6,
     parameter [31:0] TAPPER_CRC32 = 32'h0f584827,
     parameter [31:0] TIMBER_CRC32 = 32'h3f49e94e,
@@ -33,6 +34,7 @@ module gb_mcr_game #(
         known=1; family=2; portrait=0; sg=0; mode=0; dips=8'hff; size=20'h3a000;
         case (crc)
             (PREFIX ? 32'hfccebe1a : DOTRON_CRC32): begin family=2'd2; mode=3'd2; portrait=1'b0; sg=1'b0; dips=8'hff; size=20'h3a000; end
+            (PREFIX ? 32'haabe522c : DOTRONE_CRC32): begin family=2'd2; mode=3'd4; portrait=1'b0; sg=1'b0; dips=8'hff; size=20'h3e000; end
             (PREFIX ? 32'h9c03c23c : JOURNEY_CRC32): begin family=2'd2; mode=3'd3; portrait=1'b1; sg=1'b0; dips=8'hff; size=20'h3a000; end
             (PREFIX ? 32'h74a42881 : TAPPER_CRC32): begin family=2'd2; mode=3'd0; portrait=1'b0; sg=1'b0; dips=8'hff; size=20'h3a000; end
             (PREFIX ? 32'hd846c873 : TIMBER_CRC32): begin family=2'd2; mode=3'd1; portrait=1'b0; sg=1'b0; dips=8'hff; size=20'h3a000; end

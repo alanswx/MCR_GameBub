@@ -27,3 +27,11 @@ The standalone ROM builder contains recipes, filenames and checksums derived
 from the official MRA descriptions. It contains no game ROM, PROM or sample
 bytes. Users supply their own data. CPU microcode in the imported FX68K
 source is part of the CPU implementation, not a game ROM.
+
+The Squawk & Talk board comes from Alan Steremberg's
+[MCR3 speech branch](https://github.com/alanswx/Arcade-MCR3_MiSTer/tree/squawk-n-talk-speech);
+its exact revision and adaptations are in `scripts/import_speech.txt`. It
+includes Jose Tejada's jt680x (GPL-3.0-or-later) and zeldin/Mega99's TMS5200
+implementation (LGPL-3.0). Corresponding licence texts are retained under
+`licenses/`. The initialized TMS coefficient/chirp tables are part of the
+speech chip implementation; speech firmware remains user-supplied ROM data.

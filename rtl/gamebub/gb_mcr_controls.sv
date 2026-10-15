@@ -17,7 +17,7 @@ module gb_mcr_controls (
     wire lt = focus && (sideways_cw ? down : sideways_ccw ? up : left);
     wire rt = focus && (sideways_cw ? up : sideways_ccw ? down : right);
     wire fa = a && focus, fb = b && focus, fc = x && focus, fd = y && focus;
-    wire spinner_game = family == 0 ? mode == 0 : family == 3 ? mode == 4 : mcr2 ? (mode == 1 || mode == 2 || mode == 4) : mode == 2;
+    wire spinner_game = family == 0 ? mode == 0 : family == 3 ? mode == 4 : mcr2 ? (mode == 1 || mode == 2 || mode == 4) : (mode == 2 || mode == 4);
     // R remains Start 2 on the existing games; spinner games use Start+R.
     wire s2 = focus && r && (!spinner_game || start);
     wire s1 = focus && start && !(spinner_game && r);
@@ -104,10 +104,10 @@ module gb_mcr_controls (
             default: ;
         endcase
         else case (mode)
-            2: begin // Discs of Tron: movement, toss/deflect, aim up/down.
+            2,4: begin // Discs of Tron: movement, toss/deflect, aim up/down.
                 port0 = ~{service,2'b00,fa,s2,s1,1'b0,coin && focus};
                 port1 = ~{1'b0,spin[9:3]};
-                port2 = ~{1'b0,fb,fc,fd,d,u,rt,lt};
+                port2 = ~{(mode == 4),fb,fc,fd,d,u,rt,lt};
             end
             3: begin // Journey's MCR2.5 input map.
                 port0 = ~{service,2'b00,fa,s2,s1,1'b0,coin && focus};

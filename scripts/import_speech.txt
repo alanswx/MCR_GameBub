@@ -1,0 +1,6 @@
+Upstream: https://github.com/alanswx/Arcade-MCR3_MiSTer.git
+Branch: squawk-n-talk-speech
+Commit: 09c8a26ee6e2c828f8cb12cd1b317235c758bcd1
+Verified UTC: 2026-10-15
+Patches: inline jt680x includes and CPU/chip control tables; declare CPU control nets before use; explicit TMS FPGA-zero power-up state, preserving existing initializers/tables; omit Altera JTAG probes; MRA index-0 MD5 verified locally, omit backdrop/artwork and unused file slots.
+Shared PIA: byte-identical to official MCR3 Mono source.

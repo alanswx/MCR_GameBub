@@ -27,7 +27,7 @@ def main():
     run("vhdl", ["xvhdl", *[str(ROOT / "rtl/mcr3" / Path(f).with_suffix(".vhdl")) for f in FILES], str(ROOT / "rtl/mcr2/mcr2.vhdl"), str(ROOT / "rtl/mcr1/mcr1.vhdl"),
         *[str(ROOT / "rtl/mcr3mono" / f) for f in ("FX68K/fx68k.vhdl", "cpu09l_128a.vhdl", "pia6821.vhdl", "turbo_cheap_squeak.vhdl", "sounds_good.vhdl", "mcr3mono.vhdl")]])
     run("mono_cpu", ["xvlog", "--sv", str(ROOT / "rtl/mcr3mono/fx68k.sv")])
-    sv = sorted(str(p) for p in (ROOT / "rtl/gamebub").glob("*.sv"))
+    sv = sorted(str(p) for p in (ROOT / "rtl/gamebub").glob("*.sv")) + sorted(str(p) for p in (ROOT / "rtl/speech").glob("*.*"))
     run("sv", ["xvlog", "--sv", *sv, str(Path(os.environ["XILINX_VIVADO"]) / "data/verilog/src/glbl.v")])
     run("elaborate", ["xelab", "-L", "unisims_ver", "-L", "unimacro_ver",
                        "--timescale", "1ns/1ps", "work.mcr3_gamebub", "work.glbl", "-s", "mcr3_check"])

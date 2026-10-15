@@ -47,6 +47,11 @@ def build(work, run):
             continue
         lines.append(line)
     generated.write_text("\n".join(lines) + "\n")
+    # The speech board shares the existing VHDL PIA, kept separate from the
+    # board-local namespaces above.
+    with generated.open('a') as output:
+        subprocess.run(['ghdl','--synth',*options,'--out=verilog','pia6821'],
+                       cwd=work,stdout=output,check=True)
     # Verilator requires packed structs when distinct fields have continuous
     # and clocked drivers. These three CPU structs contain only packed bits.
     fx68k = work / "fx68k_sim.sv"
@@ -62,6 +67,7 @@ def build(work, run):
         top_text = top_text.replace(before, f".clock_40(clk_sys && (core_reset || game_family == {family})), .reset(machine_reset || game_family != {family})")
     top.write_text(top_text)
     sv = sorted(str(p) for p in (ROOT / "rtl/gamebub").glob("*.sv") if p.name not in ("gb_clocks.sv", "mcr3_gamebub.sv"))
+    sv += sorted(str(p) for p in (ROOT / 'rtl/speech').glob('*.*'))
     run("verilator_build", ["verilator", "--binary", "--timing", "-j", "8", "-O3", "-CFLAGS", "-O3",
         "--no-assert-case", "-Wno-fatal", "-Wno-lint", "-Wno-style", "-Wno-TIMESCALEMOD", "+1364-2005ext+v",
         "--top-module", "tb_gamebub", "--Mdir", str(work / "obj"), "-o", "Vtb_gamebub",

@@ -43,6 +43,11 @@ module tb_mcr_controls;
         a=0;b=0;x=0;y=0;r=1;start=1;#1;
         if(port0!==8'hf7) $fatal(1,"Spinner Start 2 chord");
         tick_frame();if(port1!==8'h86) $fatal(1,"Start chord must not spin");
+        mode=4;#1;
+        if(port2[7]!==1'b0 || port0!==8'hf7)$fatal(1,"Environmental cabinet strap/start chord");
+        r=0;start=0;tick_frame();
+        r=1;tick_frame();if(port1!==8'h85)$fatal(1,"Environmental spinner");
+        mode=2;#1;if(port2[7]!==1'b1)$fatal(1,"Upright cabinet strap");
         r=0;start=0;mode=3;portrait=1;portrait_mode=1;down=1;a=1;#1;
         if(port0!==8'hef || port1!==8'hfe || port2!==8'hee) $fatal(1,"Journey portrait directions/fire");
         focus=0;service=1;#1;
@@ -77,7 +82,7 @@ module tb_mcr_controls;
         output6=8'h40;repeat(2)@(negedge clk);if(port1!==8'hff)$fatal(1,"Derby inactive player mux");
         mode=5;left=0;right=1;a=1;#1;
         if(port1!==8'h77 || port0!==8'hef)$fatal(1,"Star Guards directional fire/status");
-        $display("MCR CONTROLS PASS: all 18 maps, spinners, trackball, analog/ADC, gear edges, wheel mux, sound status, portrait/focus");
+        $display("MCR CONTROLS PASS: all 19 maps, spinners, trackball, analog/ADC, gear edges, wheel mux, sound status, portrait/focus");
         $finish;
     end
 endmodule

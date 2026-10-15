@@ -22,6 +22,9 @@ module tb_platform;
     gb_mcr_host #(.TIMBER_CRC32(32'hfb5f94cb), .DOMINO_CRC32(32'h85004ba5)) host (.*);
 
     wire initialized;
+    wire game_speech = game_family == 2 && game_mod == 4;
+    wire [13:0] speech_addr = 0;
+    wire [7:0] speech_data;
     reg [15:0] cpu_addr = 0;
     reg [17:0] sound_addr = 0;
     reg [15:0] sprite_addr = 0;

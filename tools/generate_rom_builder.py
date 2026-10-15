@@ -12,7 +12,7 @@ def generate():
     games = json.loads((ROOT / 'gamedb/games.json').read_text())
     recipes = []
     for game in games:
-        path = ROOT.parent / f"Arcade-MCR{game['family']}_MiSTer/releases" / game['mra']
+        path = (ROOT / game['mra_local']) if game.get('mra_local') else ROOT.parent / f"Arcade-MCR{game['family']}_MiSTer/releases" / game['mra']
         xml = ET.parse(path)
         rom = xml.find("rom[@index='0']")
         if rom is None or rom.get('md5') != game['md5']:
