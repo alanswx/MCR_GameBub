@@ -16,7 +16,7 @@ module tb_platform;
     wire [31:0] debug_status;
     wire game_timber;
     // zlib CRC of pattern(0..0x39fff), independent of the RTL CRC function.
-    gb_mcr_host #(.TIMBER_CRC32(32'hfb5f94cb)) host (.*);
+    gb_mcr_host #(.TIMBER_CRC32(32'hfb5f94cb), .DOMINO_CRC32(32'h85004ba5)) host (.*);
 
     wire initialized;
     reg [15:0] cpu_addr = 0;
@@ -31,6 +31,9 @@ module tb_platform;
     wire [1:0] sram_mask_n;
     wire [17:0] sram_a;
     wire [15:0] sram_dq_out, sram_dq_in;
+    wire game_mcr2;
+    wire [16:0] m2_dl_addr;
+    wire m2_dl_wr;
     gb_mcr_memory memory (.*);
     reg [15:0] sram [0:262143];
     // 10 ns access delay; pins are sampled 25 ns after address issue.
@@ -198,12 +201,34 @@ module tb_platform;
         end
         command(16'h0101, 0, 0, 0);
         if (!core_reset) $fatal(1, "Halt did not reset core");
+        // Switch family without reconfiguring the FPGA. All destination RAMs
+        // are populated before CRC identification, using stock MRA offsets.
+        command(16'h0300, 0, 0, 0);
+        if (game_mcr2 || game_timber) $fatal(1, "Identity not cleared at reload");
+        for (i=0; i<'h1c000; i=i+4) begin
+            write_word(32'h10000000+i, {pattern(i+3),pattern(i+2),pattern(i+1),pattern(i)});
+            repeat (58) @(negedge clk);
+        end
+        command(16'h0301, 0, 'h3a000, 1); // CRC and byte count cannot excuse wrong size.
+        command(16'h0301, 0, 'h1c000, 0);
+        if (!game_mcr2 || game_timber) $fatal(1, "MCR2 family not recognized");
+        command(16'h0102, 0, 0, 0);
+        command(16'h0100, 0, 0, 0);
+        if (core_reset) $fatal(1, "MCR2 did not run");
+        for (probe=0; probe<128; probe=probe+1) begin
+            sound_addr = 14'(probe * 131);
+            cpu_addr = 16'((probe * 379) % 'hc000);
+            repeat (8) @(negedge clk);
+            if (sound_data !== pattern('hc000+sound_addr)) $fatal(1, "MCR2 sound offset");
+            if (cpu_data !== pattern(cpu_addr)) $fatal(1, "MCR2 program ROM");
+        end
+        command(16'h0101, 0, 0, 0);
         write_word(32'h10050000, 32'h12345678); // Reject unmapped file writes.
         command(16'h0100, 0, 0, 1);
         // New load clears the old identity; an unknown but correctly sized
         // image must not start with the previous game's controls.
         command(16'h0300, 0, 0, 0);
-        if (game_timber || host.rom_crc !== 0) $fatal(1, "Stale game identity");
+        if (game_mcr2 || game_timber || host.rom_crc !== 0) $fatal(1, "Stale game identity");
         for (i=0; i<'h3a000; i=i+4) begin
             write_word(32'h10000000+i, 32'd0);
             repeat (58) @(negedge clk);

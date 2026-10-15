@@ -6,6 +6,9 @@
 // halves use the same latched address. Worst-case response is <8 clocks.
 module gb_mcr_memory (
     input wire clk, reset,
+    input wire game_mcr2,
+    output wire [16:0] m2_dl_addr,
+    output wire m2_dl_wr,
     input wire wr_req,
     input wire [19:0] wr_addr,
     input wire [7:0] wr_data,
@@ -33,7 +36,7 @@ module gb_mcr_memory (
     reg [7:0] main_rom [0:65535];
     reg [10:0] clear_addr;
     wire main_sel = wr_addr < 20'h0e000;
-    wire sound_sel = wr_addr >= 20'h0e000 && wr_addr < 20'h12000;
+    wire sound_sel = wr_addr >= 20'h0c000 && wr_addr < 20'h12000;
     wire sprite_sel = wr_addr >= 20'h12000 && wr_addr < 20'h32000;
     wire bg_sel = wr_addr >= 20'h32000 && wr_addr < 20'h3a000;
     wire prom_sel = wr_addr >= 20'h40000 && wr_addr < 20'h40020;
@@ -45,6 +48,8 @@ module gb_mcr_memory (
     wire high_byte = sprite_sel ? sprite_offset[15] : wr_addr[0];
     wire sram_req = start_write && (sound_sel || sprite_sel);
     wire sram_ack;
+    assign m2_dl_addr = !initialized ? {6'd0, clear_addr} : wr_addr[16:0];
+    assign m2_dl_wr = start_write && wr_addr >= 20'h10000 && wr_addr < 20'h1c000;
     assign dl_addr = !initialized ? {5'd0, clear_addr} : bg_offset[15:0];
     assign dl_data = !initialized ? 8'd0 : wr_data;
     assign dl_wr = start_write && bg_sel;
@@ -60,7 +65,7 @@ module gb_mcr_memory (
     reg [14:0] sprite_latched;
     wire [17:0] read_addr = slot == 0 ? {2'b01, sprite_addr, 1'b0} :
                                   slot == 1 ? {2'b01, sprite_latched, 1'b1} :
-                                  18'h07000 + {5'd0, sound_addr[13:1]};
+                                  (game_mcr2 ? 18'h06000 : 18'h07000) + {5'd0, sound_addr[13:1]};
     wire [15:0] q;
     wire [17:0] q_addr;
     wire q_valid;

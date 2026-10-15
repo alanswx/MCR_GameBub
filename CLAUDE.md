@@ -2,8 +2,10 @@
 
 Ports of the Bally Midway MCR arcade cores (MiSTer-devel `Arcade-MCR*_MiSTer`,
 by Dar) to the Game Bub handheld. MCR3 first (Tapper, Timber, Discs of Tron,
-Journey), then MCR2, MCR3 Mono and MCR1. Each board is its own Game Bub core
-(`alanswx.MCR3`, ...). Read `docs/PORT_PLAN.md` first: it is the brief, with
+Journey), then MCR2, MCR3 Mono and MCR1. The user has authorized one combined Game Bub core (`alanswx.MCR`) with
+ROM auto-detection. MCR2 and MCR3 are integrated first; expand incrementally
+using the Tang merge as a reference. The original MCR3 ZIP is the hardware
+baseline. Read `docs/PORT_PLAN.md` first: it is the brief, with
 the constraints, the design, the phases and the questions to ask the user.
 `docs/FRAMEWORK_CHANGES.md` explains the video limits and how we change the
 framework so that the changes can go upstream.

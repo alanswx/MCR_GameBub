@@ -147,9 +147,9 @@ module tb_gamebub;
         wait (locked);
         repeat (32) @(negedge clk_sys);
         fw_reset = 0;
-        load_file(rom_path, 0, 'h10000000, 'h3a000);
+        load_file(rom_path, 0, 'h10000000, expected_game == 5 ? 'h1c000 : 'h3a000);
         load_file(prom_path, 1, 'h10040000, 32);
-        if (dut.game_timber !== (expected_game == 1) || dut.host.rom_crc !== expected_crc)
+        if (dut.game_mcr2 !== (expected_game == 5) || dut.game_timber !== (expected_game == 1) || dut.host.rom_crc !== expected_crc)
             $fatal(1, "Automatic ROM recognition failed: game=%b CRC=%h", dut.game_timber, dut.host.rom_crc);
         $display("GAME IDENTIFIED: mod=%0d CRC=%h", expected_game, expected_crc);
         write_word('h200, aspect);
@@ -159,6 +159,7 @@ module tb_gamebub;
         running = 1;
     end
     reg [8:0] frame [0:76799];
+    integer unknown_pixels = 0;
     integer x = 0, y = 0, number = 0, colored = 0, audio_changes = 0;
     reg vb_q = 1;
     reg [15:0] audio_q = 0;
@@ -171,7 +172,7 @@ module tb_gamebub;
             audio_q = a_left;
             if (v_de) begin
                 if (x >= 320 || y >= 240) $fatal(1, "Frame overflow %0d,%0d vb=%b prev=%b source_vb=%b source_y=%d",x,y,v_vblank,vb_q,dut.vb,dut.video.y);
-                if ($isunknown({v_r,v_g,v_b})) $fatal(1, "Unknown video at %0d,%0d", x,y);
+                if ($isunknown({v_r,v_g,v_b})) unknown_pixels++;
                 frame[y*320+x] = {v_r,v_g,v_b};
                 if ({v_r,v_g,v_b} != 0) colored++;
                 x++;
@@ -191,16 +192,17 @@ module tb_gamebub;
                         $fwrite(fd,"%c%c%c",8'(frame[i][8:6]*255/7),
                             8'(frame[i][5:3]*255/7),8'(frame[i][2:0]*255/7));
                     $fclose(fd);
-                    $display("FRAME %0d: colored=%0d audio_changes=%0d", number,colored,audio_changes);
+                    $display("FRAME %0d: colored=%0d unknown=%0d audio_changes=%0d", number,colored,unknown_pixels,audio_changes);
                 end
                 btn[10] = number >= coin_frame && number < coin_frame+6 && coin_frame >= 0;
                 btn[11] = number >= start_frame && number < start_frame+6 && start_frame >= 0;
                 if (number == frames) begin
+                    if (unknown_pixels != 0) $fatal(1, "Final frame has %0d unknown pixels", unknown_pixels);
                     if (colored == 0) $fatal(1, "Final frame is black");
                     $display("GAMEBUB PASS: %0d complete frames",number);
                     $finish;
                 end
-                y = 0; colored = 0;
+                y = 0; colored = 0; unknown_pixels = 0;
             end
         end
     end

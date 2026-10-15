@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the complete MCR3 core in Xsim with local ROMs; no ROM data is included.
+"""Run the combined MCR core in Xsim with local ROMs; no ROM data is included.
 
 Source scripts/env.sh first. Paths are relative to the repository root.
 Use --compile-only followed by --run-only if the simulator needs permissions
@@ -62,10 +62,10 @@ def main():
             "--timescale", "1ns/1ps", "work.tb_gamebub", "work.glbl", "-s", "gamebub_test"])
     if args.compile_only:
         return
-    for name, size in (("rom", 0x3a000), ("prom", 32)):
+    for name, sizes in (("rom", (0x1c000, 0x3a000)), ("prom", (32,))):
         path = (ROOT / getattr(args, name)).resolve()
-        if not path.is_file() or path.stat().st_size != size:
-            p.error(f"{name} must be a {size}-byte file: {path}")
+        if not path.is_file() or path.stat().st_size not in sizes:
+            p.error(f"{name} must be a file of size {sizes}: {path}")
         setattr(args, name, path)
     args.out = (ROOT / args.out).resolve()
     args.out.mkdir(parents=True, exist_ok=True)
@@ -75,7 +75,7 @@ def main():
         argument = f"{name}={getattr(args, name)}"
         command += ["--testplusarg", argument] if args.backend == "xsim" else ["+" + argument]
     checksum = zlib.crc32(args.rom.read_bytes())
-    known_games = {0x0f584827: 0, 0x3f49e94e: 1}
+    known_games = {0x0f584827: 0, 0x3f49e94e: 1, 0x085cde56: 5}
     if checksum not in known_games:
         p.error(f"Unsupported ROM CRC {checksum:08x}")
     for argument in (f"expected_game={known_games[checksum]}", f"expected_crc={checksum:08x}"):

@@ -468,3 +468,69 @@ and normal startup with the double-reset correction on the Game Bub.
 It supersedes the pending hardware checks above. No further manual Reset
 workaround was reported. This is the working baseline for the proposed
 merged MCR expansion; other families and NVRAM persistence remain future work.
+
+### Combined-family implementation (2026-10-14)
+
+The user authorized tackling the combined core after confirming Tapper and
+Timber on hardware. The user-facing direction is now one `alanswx.MCR`
+core; the separate-core plan above is superseded. The first testable
+increment combines current official MCR2 and MCR3 engines, with Domino Man
+joining Tapper and Timber. Keep the existing two-game ZIP as the known-good
+hardware reference. The new core installs beside it with a different ID.
+
+Live HEAD verification: official MCR2 remains
+`6a8c78f91229339306834d53bebf3434aefedf61`; the clean sibling clone matches.
+The Tang merge remains `60363fa2a2a5e50e07c48bfe084bb61e00b1d393`.
+`scripts/import_mcr2.py` imports the board reproducibly, verifies shared
+primitives against MCR3 and verifies the SSIO PROM contents match. It adds
+the external PROM ports and static VHDL port expressions, and carries over
+the Tang MCR2 progressive 512x480 active window. MiSTer's 478-line window
+would only produce 239 lines in our half-resolution capture.
+
+The two board engines share the main-program BRAM and SRAM sound interface.
+MCR2 sound starts at ROM offset C000; MCR3 sound starts at E000. The loader
+writes both board graphics destinations in parallel before identification,
+so ordinary headerless MRA outputs can still identify themselves only at
+EOF. Unselected engines remain in reset. MCR2 retains its internal graphics
+BRAMs for this increment; the first synthesis uses 90/135 BRAM tiles and
+about 11.1k LUTs. This leaves room to evaluate MCR1 before needing the Tang
+merge's scratch/graphics memory sharing. MCR3Scroll and MCR3Mono remain later
+integrations; no claim is made that the entire Tang roster is playable yet.
+
+Domino Man is stock MRA output, size 0x1c000, MD5
+`112359d5a207884821f6df0f0c1c4d2c`, CRC32 `085cde56`, MCR2 mod 5, DIPs FF 00.
+The loader validates both the actual byte count and reported size against
+the detected game's expected length. File metadata no longer forces the
+MCR3 size on MCR2. D-pad/Select/Start map movement/coin/start; A swats and R
+starts the alternating second player. No separate game-selection setting.
+
+Platform regressions pass, including an in-place MCR3-to-MCR2 family switch,
+CPU and sound reads at both layouts, and rejection of mismatched file size.
+The full-core test permits undefined palette pixels during startup but
+requires zero undefined pixels and visible content in the final frame;
+timing and frame dimensions are checked throughout. Domino's first capture
+at frame 5 has a fully defined startup grid. Longer startup runs, baseline
+regressions, and final routed implementation are in progress.
+
+The corrected combined rev 4 implementation meets routed timing: WNS
++0.352 ns, WHS +0.047 ns, zero failing endpoints, 90/135 BRAM tiles and
+10,787 LUTs. Build log: `build/combined-build.log`. The private three-game
+archive is `build/MCR_GameBub_combined_test.zip` (about 601 KiB), verified
+against each source payload. The original two-game ZIP is unchanged.
+
+Domino Man passes ten complete Xsim startup frames with no undefined
+pixels in the final frame. The experimental converted backend also passes
+120 frames through the grid/color-pattern boot sequence; this is not a
+hardware gameplay claim. Tapper's combined-core ten-frame Xsim capture is
+byte-identical to the previous auto-detection baseline. Timber also passes ten Xsim frames and matches its previous startup
+capture byte for byte. An extended Domino boot run with coin/start input
+is still in progress.
+
+Next integration boundaries: add MCR1 with a fresh upstream verification,
+retain per-family reset isolation, and measure the cost before hoisting
+memories. Bring in the Tang shared graphics/scratch interfaces only where
+the resource report justifies them. MCR3Scroll needs separate review of its
+Cheap Squeak Deluxe audio/68000 ROM routing. Portrait games also need a
+usable orientation/control plan. Each step must keep stock-ROM recognition
+and the three-game baseline passing; a family engine's presence alone does
+not make every game supported.

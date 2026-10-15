@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build local Tapper or Timber test files with mra-tools-c; never downloads ROM data.
+"""Build local Tapper, Timber, or Domino Man test files with mra-tools-c; never downloads ROM data.
 
 The timing PROM comes from a user-supplied binary or the locally cloned
 upstream VHDL initializer, which is deliberately omitted from imported RTL.
@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--game", choices=("tapper", "timber"), default="tapper")
+    p.add_argument("--game", choices=("tapper", "timber", "domino"), default="tapper")
     p.add_argument("--zip", type=Path, required=True, help="local MAME zip")
     p.add_argument("--mra-tool", type=Path, default=ROOT.parent / "mra-tools-c/mra")
     p.add_argument("--mra", type=Path, default=None)
@@ -27,8 +27,8 @@ def main():
     p.add_argument("--out", type=Path, default=ROOT / "scratch/roms")
     args = p.parse_args()
     if args.mra is None:
-        name = "Tapper (Budweiser, 840127).mra" if args.game == "tapper" else "Timber.mra"
-        args.mra = ROOT.parent / "Arcade-MCR3_MiSTer/releases" / name
+        name = {"tapper": "Tapper (Budweiser, 840127).mra", "timber": "Timber.mra", "domino": "Domino Man.mra"}[args.game]
+        args.mra = ROOT.parent / ("Arcade-MCR2_MiSTer/releases" if args.game == "domino" else "Arcade-MCR3_MiSTer/releases") / name
     if args.prom:
         data = args.prom.read_bytes()
     else:
@@ -51,7 +51,7 @@ def main():
         (stage / (args.game + ".zip")).symlink_to(args.zip.resolve(strict=True))
         subprocess.run([str(args.mra_tool.resolve()), "-A", "game.mra"], cwd=stage, check=True)
         result = (stage / (args.game + ".rom")).read_bytes()
-        if len(result) != 0x3a000 or hashlib.md5(result).hexdigest() != rom.get("md5"):
+        if len(result) != (0x1c000 if args.game == "domino" else 0x3a000) or hashlib.md5(result).hexdigest() != rom.get("md5"):
             p.error("Assembled ROM size or MRA MD5 mismatch")
         (args.out / (args.game + ".rom")).write_bytes(result)
     (args.out / "ssio.prom").write_bytes(data)

@@ -8,12 +8,24 @@ from import_mcr import FILES, ROOT
 
 def build(work, run):
     options = ["--std=08", "-frelaxed", "-fsynopsys", "-fexplicit"]
-    files = [str(ROOT / "rtl/mcr3" / Path(f).with_suffix(".vhdl")) for f in FILES]
+    files = [str(ROOT / "rtl/mcr3" / Path(f).with_suffix(".vhdl")) for f in FILES] + [str(ROOT / "rtl/mcr2/mcr2.vhdl")]
     run("ghdl_analyze", ["ghdl", "-a", *options, *files])
-    generated = work / "mcr3.v"
-    with generated.open("w") as output, (work / "ghdl_synth.log").open("w") as log:
-        subprocess.run(["ghdl", "--synth", *options, "--out=verilog", "mcr3"],
-                       cwd=work, stdout=output, stderr=log, check=True)
+    generated = work / "mcr_combined.v"
+    chunks = []
+    # Namespace each independently synthesized hierarchy. GHDL assigns local
+    # generated names, so merging its two outputs without renaming is unsafe.
+    for board in ("mcr3", "mcr2"):
+        raw = work / (board + ".v")
+        with raw.open("w") as output, (work / (board + "_ghdl.log")).open("w") as log:
+            subprocess.run(["ghdl", "--synth", *options, "--out=verilog", board],
+                           cwd=work, stdout=output, stderr=log, check=True)
+        chunk = raw.read_text()
+        names = re.findall(r"^module (\w+)", chunk, re.M)
+        for name in sorted(names, key=len, reverse=True):
+            if name != board:
+                chunk = re.sub(r"\b" + re.escape(name) + r"\b", board + "__" + name, chunk)
+        chunks.append(chunk)
+    generated.write_text("\n".join(chunks))
     # GHDL 4.1 emits a malformed prefixed escaped name and redundant wires
     # where instance-output aliases have the same name as the parent signal.
     # Normalize only generated simulation code, never the imported VHDL.

@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--zip", type=Path, help="write a private SD-card test ZIP")
-    parser.add_argument("--roms", type=Path, help="local folder with tapper.rom, timber.rom, ssio.prom")
+    parser.add_argument("--roms", type=Path, help="local folder with tapper.rom, timber.rom, domino.rom, ssio.prom")
     args = parser.parse_args()
     if bool(args.zip) != bool(args.roms):
         parser.error("Use --zip and --roms together for the private test bundle")
@@ -38,41 +38,43 @@ def main():
         shutil.copyfile(ROOT / "metadata" / name, stage / name)
     shutil.copyfile(bit, stage / bit_name)
     print(f"Local hardware-test folder: {stage}")
-    print("Copy your ssio.prom into that folder, then select a supported MCR3 ROM at launch.")
+    print("Copy your ssio.prom into that folder, then select a supported MCR ROM at launch.")
     if not args.zip:
         print("Staging folder contains only the core and metadata.")
         return
     sources = [(stage / name, f"cores/{core_id}/{name}") for name in
                ("core.json", "files.json", "settings.json", bit_name)]
-    for name, checksum in (("tapper", 0x0f584827), ("timber", 0x3f49e94e)):
+    for name, checksum in (("tapper", 0x0f584827), ("timber", 0x3f49e94e), ("domino", 0x085cde56)):
         path = args.roms / (name + ".rom")
         data = path.read_bytes()
-        if len(data) != 0x3a000 or zlib.crc32(data) != checksum:
+        if len(data) != (0x1c000 if name == "domino" else 0x3a000) or zlib.crc32(data) != checksum:
             raise SystemExit(f"Unexpected {name} ROM size/CRC")
-        sources.append((path, f"roms/MCR3/{name.title()}.rom"))
+        sources.append((path, f"roms/MCR/{name.title()}.rom"))
     prom = args.roms / "ssio.prom"
     if hashlib.sha256(prom.read_bytes()).hexdigest() != "4962a47f67ce0cebc655026efed495eb17fc29e7072650ecab2cecc4f16c06dc":
         raise SystemExit("Unexpected SSIO timing PROM")
     sources.append((prom, f"cores/{core_id}/ssio.prom"))
-    instructions = """MCR3 Game Bub rev 4 - private hardware test
+    instructions = """Combined MCR Game Bub rev 4 - private hardware test
 
 Extract this ZIP at the root of your Game Bub SD card. Merge cores/ and
-roms/ with the existing folders, replacing the alanswx.MCR3 core files.
-Existing settings and other cores are not included or overwritten.
+roms/ with the existing folders. Launch Bally Midway MCR (alanswx.MCR).
+This installs beside the proven Bally Midway MCR3 core (alanswx.MCR3).
 
-Launch Bally Midway MCR3. Select Tapper.rom or Timber.rom in roms/MCR3.
-The core recognizes the game automatically; there is no game setting.
+Choose Tapper.rom, Timber.rom, or Domino.rom in roms/MCR.
+ROM recognition selects MCR2 or MCR3 and the controls automatically.
 The required sound PROM is already in the core folder.
 
-Both: D-pad move, Select coin, Start player 1.
+All: D-pad move, Select coin, Start player 1.
 Tapper: A fill, R player 2 start (alternating).
-Timber: A axe right, B axe left. Single-player controls only in this build.
-Picture defaults to 4:3. The startup double-reset correction is included.
+Timber: A axe right, B axe left. Single-player controls only.
+Domino Man: A swat, R player 2 start (alternating).
+Picture defaults to 4:3. Startup double-reset correction is included.
 
-Both Tapper and Timber have been confirmed to start and play correctly
-on Game Bub hardware with automatic recognition and the startup fix.
-High scores are not saved yet. Other MCR games and other ROM revisions
-are not recognized by this build.
+This is the first combined MCR2/MCR3 hardware candidate. Please test cold
+launch, picture, controls and sound for all three games. Tapper and Timber
+worked in the earlier MCR3-only build; the combined build needs a retest.
+High scores are not saved. MCR1, scrolling games, and MCR3 Mono are not
+included yet. Other ROM revisions are not recognized.
 
 This private test bundle includes your local ROM data. Do not publish it.
 """
@@ -80,8 +82,8 @@ This private test bundle includes your local ROM data. Do not publish it.
     with zipfile.ZipFile(args.zip, "w", zipfile.ZIP_DEFLATED) as archive:
         for src, name in sources:
             archive.write(src, name)
-        archive.writestr("MCR3-INSTALL.txt", instructions)
-        archive.writestr("MCR3-SHA256SUMS.txt", "".join(
+        archive.writestr("MCR-INSTALL.txt", instructions)
+        archive.writestr("MCR-SHA256SUMS.txt", "".join(
             f"{hashlib.sha256(src.read_bytes()).hexdigest()}  {name}\n" for src, name in sources))
     with zipfile.ZipFile(args.zip) as archive:
         if archive.testzip() is not None:

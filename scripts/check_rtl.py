@@ -23,7 +23,7 @@ def main():
             raise SystemExit(f"{name} failed: {log}")
         print(f"{name}: passed ({log.relative_to(ROOT)})", flush=True)
 
-    run("vhdl", ["xvhdl", *[str(ROOT / "rtl/mcr3" / Path(f).with_suffix(".vhdl")) for f in FILES]])
+    run("vhdl", ["xvhdl", *[str(ROOT / "rtl/mcr3" / Path(f).with_suffix(".vhdl")) for f in FILES], str(ROOT / "rtl/mcr2/mcr2.vhdl")])
     sv = sorted(str(p) for p in (ROOT / "rtl/gamebub").glob("*.sv"))
     run("sv", ["xvlog", "--sv", *sv, str(Path(os.environ["XILINX_VIVADO"]) / "data/verilog/src/glbl.v")])
     run("elaborate", ["xelab", "-L", "unisims_ver", "-L", "unimacro_ver",
@@ -34,7 +34,7 @@ def main():
         run("test_run", ["xsim", "platform_test", "--runall"])
         if "PLATFORM PASS" not in (work / "test_run.log").read_text():
             raise SystemExit("Platform test did not reach its success marker")
-    print("MCR3 mixed-language checks passed.")
+    print("Combined MCR mixed-language checks passed.")
 
 
 if __name__ == "__main__":

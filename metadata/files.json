@@ -1,15 +1,25 @@
 {
   "files": [
     {
-      "id": 0, "label": "MCR3 ROM",
-      "extensions": ["rom"], "user_selected": true,
-      "optional": false, "read_only": true,
-      "address": "0x10000000", "exact_size": "0x3A000"
+      "id": 0,
+      "label": "MCR ROM",
+      "extensions": [
+        "rom"
+      ],
+      "user_selected": true,
+      "optional": false,
+      "read_only": true,
+      "address": "0x10000000",
+      "max_size": "0x3A000"
     },
     {
-      "id": 1, "label": "SSIO Timing PROM", "filename": "ssio.prom",
-      "optional": false, "read_only": true,
-      "address": "0x10040000", "exact_size": "0x20"
+      "id": 1,
+      "label": "SSIO Timing PROM",
+      "filename": "ssio.prom",
+      "optional": false,
+      "read_only": true,
+      "address": "0x10040000",
+      "exact_size": "0x20"
     }
   ]
 }
