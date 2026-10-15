@@ -73,16 +73,17 @@ Timber: A axe right, B axe left. Single-player controls only.
 Domino Man: A swat, R player 2 start (alternating).
 Satan's Hollow: Left/right move, A fire, B shield, R player 2 start.
 Portrait games defaults to Upright: normal grip, tall picture with side borders.
-Sideways mode: turn the Bub clockwise; Down/Up become screen left/right.
+Hold sideways (CW): turn the Bub clockwise; Down/Up become screen left/right.
+Hold sideways (CCW): turn counterclockwise, joypad at bottom; Up/Down move left/right.
 The firmware menu keeps its normal orientation. Allow a few seconds for
 Satan's Hollow's startup memory/color tests and delayed restart.
 Picture defaults to 4:3. Startup double-reset correction is included.
-Version 0.3.1 adds Satan's Hollow and optional portrait rotation.
+Version 0.3.2 adds the opposite sideways grip, using no extra image RAM.
 It retains MCR2's corrected 18-source-pixel horizontal capture delay
 and restores the MCR2 one-second delayed restart.
 
 Tapper, Timber, and Domino Man worked in the previous hardware-confirmed build.
-This new portrait build needs an LCD/HDMI hardware retest, including the menu.
+The previous portrait picture looks good on device; the new CCW grip needs testing.
 It uses a local, optional framework rotation change; it is a private test.
 High scores are not saved. MCR1, scrolling games, and MCR3 Mono are not
 included yet. Other ROM revisions are not recognized.

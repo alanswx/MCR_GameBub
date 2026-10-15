@@ -19,13 +19,14 @@ from check_rtl import main as check_rtl
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--trace-cpu", action="store_true")
+    p.add_argument("--orientation-only", action="store_true", help="check all grip requests after ROM detection, then stop")
     p.add_argument("--backend", choices=("xsim", "verilator"), default="xsim")
     p.add_argument("--rom", type=Path, default=Path("scratch/roms/tapper.rom"))
     p.add_argument("--prom", type=Path, default=Path("scratch/roms/ssio.prom"))
     p.add_argument("--out", type=Path, default=Path("scratch/tapper-frames"))
     p.add_argument("--frames", type=int, default=120)
     p.add_argument("--dump", type=int, default=30)
-    p.add_argument("--portrait-sideways", type=int, choices=(0, 1), default=0)
+    p.add_argument("--portrait-mode", "--portrait-sideways", dest="portrait_mode", type=int, choices=(0, 1, 2), default=0)
     p.add_argument("--aspect", type=int, choices=(0, 1), default=1)
     p.add_argument("--coin", type=int, default=-1)
     p.add_argument("--start", type=int, default=-1)
@@ -73,9 +74,11 @@ def main():
     args.out.mkdir(parents=True, exist_ok=True)
     command = (["xsim", "gamebub_test", "--runall"] if args.backend == "xsim"
                else [str(work / "obj/Vtb_gamebub")])
-    for name in ("rom", "prom", "out", "frames", "dump", "aspect", "coin", "start", "portrait_sideways"):
+    for name in ("rom", "prom", "out", "frames", "dump", "aspect", "coin", "start", "portrait_mode"):
         argument = f"{name}={getattr(args, name)}"
         command += ["--testplusarg", argument] if args.backend == "xsim" else ["+" + argument]
+    if args.orientation_only:
+        command += ["--testplusarg", "orientation_only"] if args.backend == "xsim" else ["+orientation_only"]
     if args.trace_cpu:
         command += ["--testplusarg", "trace_cpu"] if args.backend == "xsim" else ["+trace_cpu"]
     checksum = zlib.crc32(args.rom.read_bytes())
@@ -86,7 +89,8 @@ def main():
         command += ["--testplusarg", argument] if args.backend == "xsim" else ["+" + argument]
     output = run("game_run", command)
     print(output[-4000:])
-    if "GAMEBUB PASS" not in output:
+    marker = "ORIENTATION PASS" if args.orientation_only else "GAMEBUB PASS"
+    if marker not in output:
         raise SystemExit("Simulation did not reach its success marker")
 
 

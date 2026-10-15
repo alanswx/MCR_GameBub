@@ -671,3 +671,22 @@ Source/metadata remain on `feature/portrait-video`; framework rotation is
 local commit `6e5adf7` with the reviewable patch preserved in this repo.
 Hardware testing of Satan's Hollow, both orientations, overlay, controls,
 sound and docking remains the next external validation step.
+
+
+### Opposite sideways grip (0.3.2)
+
+The user reports that the portrait build looks good on the device. The CW
+sideways grip leaves the joypad at the top; they requested the opposite grip.
+Setting 0x210 now accepts 0 = upright, 1 = hold CW (existing saved value),
+2 = hold CCW. Invalid value 3 falls back to upright. Upright remains default.
+For Satan's Hollow these request framework turns 1, 0, 2 respectively:
+the opposite grip needs a 180-degree framebuffer read relative to the raw
+raster, rather than another quarter-turn. Both sideways grips retain the
+landscape game area and Picture setting. The firmware menu stays unchanged.
+CCW maps physical Up/Down to screen Left/Right; CW retains Down/Up.
+Other games retain their original video and controls regardless of setting.
+The framework already supports these transforms, so no framework change or
+additional image RAM is needed. The previous build used 90/135 BRAM tiles.
+Targeted input tests cover both grips, unused axes, focus and Domino controls;
+platform tests cover all setting values and invalid-value fallback.
+Validation and routed build results follow when complete.

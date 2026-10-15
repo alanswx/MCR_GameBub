@@ -29,7 +29,8 @@ module gb_mcr_host #(
     output reg [7:0] dips,
     output reg game_timber,
     output reg game_mcr2,
-    output reg game_shollow, portrait_sideways,
+    output reg game_shollow,
+    output reg [1:0] portrait_mode,
     output wire [31:0] debug_status
 );
     reg [31:0] command [0:7];
@@ -96,7 +97,7 @@ module gb_mcr_host #(
             present <= 0; load_error <= 0; focus <= 0;
             crc_state <= 32'hffffffff; rom_bytes <= 0;
             rom_loading <= 0; game_timber <= 0; game_mcr2 <= 0; game_shollow <= 0;
-            portrait_sideways <= 0;
+            portrait_mode <= 0;
             aspect <= 1; volume <= 0; service <= 0; dips <= 8'hff;
             for (i=0; i<8; i=i+1) command[i] <= 0;
             for (i=0; i<2; i=i+1) file_size[i] <= 0;
@@ -116,7 +117,7 @@ module gb_mcr_host #(
                             12'h204: volume <= mem_dataWrite[1:0];
                             12'h208: service <= mem_dataWrite[0];
                             12'h20c: dips <= mem_dataWrite[7:0];
-                            12'h210: portrait_sideways <= mem_dataWrite[0];
+                            12'h210: portrait_mode <= mem_dataWrite[1:0] == 2'd3 ? 2'd0 : mem_dataWrite[1:0];
                             default: ;
                         endcase
                     end else begin
@@ -127,7 +128,7 @@ module gb_mcr_host #(
                             12'h204: mem_dataRead <= {30'd0, volume};
                             12'h208: mem_dataRead <= {31'd0, service};
                             12'h20c: mem_dataRead <= {24'd0, dips};
-                            12'h210: mem_dataRead <= {31'd0, portrait_sideways};
+                            12'h210: mem_dataRead <= {30'd0, portrait_mode};
                             12'h800: mem_dataRead <= 32'h4d435233;
                             12'h804: mem_dataRead <= debug_status;
                             12'h810: mem_dataRead <= file_size[0];

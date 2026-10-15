@@ -14,7 +14,8 @@ module tb_platform;
     wire [7:0] wr_data, dips;
     wire [1:0] volume;
     wire [31:0] debug_status;
-    wire game_timber, game_shollow, portrait_sideways;
+    wire game_timber, game_shollow;
+    wire [1:0] portrait_mode;
     // zlib CRC of pattern(0..0x39fff), independent of the RTL CRC function.
     gb_mcr_host #(.TIMBER_CRC32(32'hfb5f94cb), .DOMINO_CRC32(32'h85004ba5)) host (.*);
 
@@ -154,9 +155,13 @@ module tb_platform;
         repeat (8) @(negedge clk);
         reset = 0;
         command(16'h0100, 0, 0, 1); // Cannot run before required files.
-        if (portrait_sideways !== 0) $fatal(1, "Wrong portrait default");
+        if (portrait_mode !== 0) $fatal(1, "Wrong portrait default");
         write_word(32'h210, 1);
-        if (!portrait_sideways) $fatal(1, "Portrait setting write");
+        if (portrait_mode !== 1) $fatal(1, "Portrait setting write");
+        write_word(32'h210, 2);
+        if (portrait_mode !== 2) $fatal(1, "CCW portrait setting write");
+        write_word(32'h210, 3);
+        if (portrait_mode !== 0) $fatal(1, "Invalid portrait mode fallback");
         write_word(32'h210, 0);
         command(16'h0300, 0, 0, 0);
         for (i=0; i<'h3a000; i=i+4) begin

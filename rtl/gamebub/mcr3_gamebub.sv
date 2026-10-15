@@ -63,8 +63,11 @@ module mcr3_gamebub (
     wire core_reset, act_reset, focus, aspect, service;
     wire [1:0] volume;
     wire [7:0] dips;
-    wire game_timber, game_mcr2, game_shollow, portrait_sideways;
-    assign videoTransform_rotation = game_shollow && !portrait_sideways ? 2'd1 : 2'd0;
+    wire game_timber, game_mcr2, game_shollow;
+    wire [1:0] portrait_mode;
+    // Grip CW uses the raw raster; the opposite grip needs a half-turn.
+    assign videoTransform_rotation = !game_shollow ? 2'd0 :
+        portrait_mode == 2'd1 ? 2'd0 : portrait_mode == 2'd2 ? 2'd2 : 2'd1;
     wire wr_req, wr_ack, wr_error, initialized;
     wire [19:0] wr_addr;
     wire [7:0] wr_data;
@@ -80,7 +83,7 @@ module mcr3_gamebub (
         .wr_ack(wr_ack), .wr_error(wr_error),
         .core_reset(core_reset), .act_reset(act_reset), .focus(focus),
         .aspect(aspect), .volume(volume), .service(service), .dips(dips), .game_timber(game_timber), .game_mcr2(game_mcr2),
-        .game_shollow(game_shollow), .portrait_sideways(portrait_sideways),
+        .game_shollow(game_shollow), .portrait_mode(portrait_mode),
         .debug_status(debug_status)
     );
     wire machine_reset, m2_reset_sequence, m3_reset_sequence;
@@ -157,7 +160,7 @@ module mcr3_gamebub (
     );
     wire [7:0] m2_input0, m2_input1, m2_input2;
     gb_mcr2_inputs mcr2_inputs (
-        .shollow(game_shollow), .sideways(portrait_sideways && game_shollow),
+        .shollow(game_shollow), .portrait_mode(portrait_mode),
         .focus(focus), .service(service), .up(input_buttons_up), .down(input_buttons_down),
         .left(input_buttons_left), .right(input_buttons_right), .a(input_buttons_a), .b(input_buttons_b),
         .start(input_buttons_start), .coin(input_buttons_select), .start2(input_buttons_r),

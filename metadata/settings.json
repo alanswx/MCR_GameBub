@@ -72,6 +72,10 @@
         {
           "label": "Hold sideways (CW)",
           "value": "0x1"
+        },
+        {
+          "label": "Hold sideways (CCW)",
+          "value": "0x2"
         }
       ]
     }

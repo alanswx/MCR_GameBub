@@ -22,14 +22,18 @@ Domino Man uses A to swat and R for player 2 start.
 Satan's Hollow uses Left/Right, A fire, and B shield. **Portrait games**
 defaults to **Upright**, a 360x480 picture with side borders when holding the
 Bub normally. **Hold sideways (CW)** fills the landscape game area; turn the
-Bub clockwise and use Down/Up for screen left/right. The menu retains its
-normal orientation. This 0.3.1 portrait build needs LCD/HDMI hardware testing. Allow a few
+Bub clockwise and use Down/Up for screen left/right. **Hold sideways (CCW)**
+turns the picture the other way: turn the Bub counterclockwise, with the
+joypad at the bottom, and use Up/Down for screen left/right. Neither sideways
+option uses additional image RAM. The menu retains its normal orientation.
+The previous portrait build looks good on the device; the new CCW grip
+needs a hardware check. Allow a few
 seconds for Satan's Hollow's startup memory/color tests and delayed restart.
 
 High scores are not yet saved. MCR1, MCR3Scroll, and MCR3 Mono are not yet
 integrated.
 
-The confirmed 0.2.1 baseline uses the unmodified framework. The 0.3.1 test
+The confirmed 0.2.1 baseline uses the unmodified framework. The 0.3.2 test
 branch adds an optional frame-buffer read transform with no extra image RAM.
 See [the framework design](docs/FRAMEWORK_CHANGES.md). Both use SRAM for sound and sprite ROMs,
 and 320×240 video with either 4:3 stretching or native-width black borders.
@@ -105,7 +109,7 @@ For a private SD-card ZIP containing your local ROMs and PROM:
 
 ```sh
 python3 scripts/package.py --roms scratch/roms \
-  --zip build/MCR_GameBub_portrait_v0.3.1.zip
+  --zip build/MCR_GameBub_portrait_v0.3.2.zip
 ```
 
 The ZIP includes only this core, four ROMs, the PROM, installation notes,
