@@ -51,7 +51,7 @@ end entity;
 architecture rtl of dpram is
 	subtype addressRange is integer range 0 to ((2**aWidth)-1);
 	type ramDef is array(addressRange) of std_logic_vector((dWidth-1) downto 0);
-	shared variable ram: ramDef;
+	shared variable ram: ramDef := (others => (others => '0'));
 	ATTRIBUTE ramstyle : string;
 	ATTRIBUTE ramstyle OF ram : VARIABLE IS "no_rw_check";
 	signal addr_a_reg: std_logic_vector((aWidth-1) downto 0);

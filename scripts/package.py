@@ -74,10 +74,12 @@ Domino Man: A swat, R player 2 start (alternating).
 Satan's Hollow: Left/right move, A fire, B shield, R player 2 start.
 Portrait games defaults to Upright: normal grip, tall picture with side borders.
 Sideways mode: turn the Bub clockwise; Down/Up become screen left/right.
-The firmware menu keeps its normal orientation.
+The firmware menu keeps its normal orientation. Allow a few seconds for
+Satan's Hollow's startup memory/color tests and delayed restart.
 Picture defaults to 4:3. Startup double-reset correction is included.
-Version 0.3.0 adds Satan's Hollow and optional portrait rotation.
-It retains MCR2's corrected 18-source-pixel horizontal capture delay.
+Version 0.3.1 adds Satan's Hollow and optional portrait rotation.
+It retains MCR2's corrected 18-source-pixel horizontal capture delay
+and restores the MCR2 one-second delayed restart.
 
 Tapper, Timber, and Domino Man worked in the previous hardware-confirmed build.
 This new portrait build needs an LCD/HDMI hardware retest, including the menu.

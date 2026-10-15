@@ -45,10 +45,13 @@ def patch(name, text):
         # Xilinx's dual-clock, write-first RAM template. A signal driven by
         # two processes resolves to X in simulation; a shared variable models
         # the single physical array. Same-address dual writes remain undefined.
-        text = replace(text, "signal ram: ramDef;", "shared variable ram: ramDef;")
+        text = replace(text, "signal ram: ramDef;", "shared variable ram: ramDef := (others => (others => '0'));")
         text = replace(text, "ATTRIBUTE ramstyle OF ram : SIGNAL", "ATTRIBUTE ramstyle OF ram : VARIABLE")
         text = replace(text, "ram(to_integer(unsigned(addr_a))) <= d_a;", "ram(to_integer(unsigned(addr_a))) := d_a;")
         text = replace(text, "ram(to_integer(unsigned(addr_b))) <= d_b;", "ram(to_integer(unsigned(addr_b))) := d_b;")
+    elif name == "gen_ram.vhd":
+        # Model the zero power-up INIT of the inferred Xilinx RAM primitives.
+        text = replace(text, "signal ram: ramDef;", "signal ram: ramDef := (others => (others => '0'));")
     elif name == "midssio_82s123.vhd":
         start = text.index("\tsignal rom_data: rom := (")
         end = text.index(");", start) + 2
@@ -107,7 +110,7 @@ def main():
             raise SystemExit(f"Source HEAD {commit} is not live {branch} {head}; update the clean clone first.")
         manifest = (f"Upstream: {URL}\nBranch: {branch}\nCommit: {commit}\n"
                     f"Verified UTC: {datetime.now(timezone.utc).date()}\n"
-                    "Patches: explicit T80 ENTITY instantiations and 9-bit I/O parity mask; shared-variable dual-port RAM; static VHDL-93 port signals; SD-loaded SSIO timing PROM.\n"
+                    "Patches: explicit T80 ENTITY instantiations and 9-bit I/O parity mask; zero-power-up RAM and shared-variable dual-port RAM; static VHDL-93 port signals; SD-loaded SSIO timing PROM.\n"
                     "Omitted: MiSTer top/platform, PLL, SDRAM, sample player, ROM images.\n")
     # Validate every patch before writing any file.
     outputs = {ROOT / "rtl/mcr3" / Path(name).with_suffix(".vhdl"):

@@ -23,12 +23,13 @@ Satan's Hollow uses Left/Right, A fire, and B shield. **Portrait games**
 defaults to **Upright**, a 360x480 picture with side borders when holding the
 Bub normally. **Hold sideways (CW)** fills the landscape game area; turn the
 Bub clockwise and use Down/Up for screen left/right. The menu retains its
-normal orientation. This 0.3.0 portrait build needs LCD/HDMI hardware testing.
+normal orientation. This 0.3.1 portrait build needs LCD/HDMI hardware testing. Allow a few
+seconds for Satan's Hollow's startup memory/color tests and delayed restart.
 
 High scores are not yet saved. MCR1, MCR3Scroll, and MCR3 Mono are not yet
 integrated.
 
-The confirmed 0.2.1 baseline uses the unmodified framework. The 0.3.0 test
+The confirmed 0.2.1 baseline uses the unmodified framework. The 0.3.1 test
 branch adds an optional frame-buffer read transform with no extra image RAM.
 See [the framework design](docs/FRAMEWORK_CHANGES.md). Both use SRAM for sound and sprite ROMs,
 and 320×240 video with either 4:3 stretching or native-width black borders.
@@ -78,6 +79,16 @@ sandbox. For Xsim, `--compile-only` and `--run-only` separate compilation
 from simulation. A simulator exit code alone is insufficient: the runners
 also require their testbench success marker.
 
+Capture files contain the stored native raster. To preview the LCD's rotated
+read path, including scaling and borders:
+
+```sh
+python3 sim/render_rotated.py scratch/shollow-reference/frame_0060.ppm \
+  --out scratch/shollow-reference/upright.ppm
+```
+
+Pass `--hdmi` for the HDMI geometry or `--rotation 0` for sideways play.
+
 The experimental `--backend verilator` uses GHDL 4.1 conversion and
 Verilator 5.052, but has shown boot differences from Xsim. Use Xsim for
 validation until that discrepancy is resolved.
@@ -94,7 +105,7 @@ For a private SD-card ZIP containing your local ROMs and PROM:
 
 ```sh
 python3 scripts/package.py --roms scratch/roms \
-  --zip build/MCR_GameBub_portrait_v0.3.0.zip
+  --zip build/MCR_GameBub_portrait_v0.3.1.zip
 ```
 
 The ZIP includes only this core, four ROMs, the PROM, installation notes,

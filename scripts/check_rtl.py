@@ -44,6 +44,13 @@ def main():
         run("inputs_run", ["xsim", "mcr2_inputs_test", "--runall"])
         if "MCR2 INPUT PASS" not in (work / "inputs_run.log").read_text():
             raise SystemExit("MCR2 input test failed")
+        run("family_reset_build", ["verilator", "--binary", "--timing", "-j", "8", "-O3",
+            "-Wno-fatal", "-Wno-lint", "-Wno-style", "--top-module", "tb_reset_families",
+            "--Mdir", str(work / "reset_obj"), str(ROOT / "rtl/gamebub/gb_mcr_reset.sv"),
+            str(ROOT / "sim/tb_reset_families.sv")])
+        run("family_reset_run", [str(work / "reset_obj/Vtb_reset_families")])
+        if "FAMILY RESET PASS" not in (work / "family_reset_run.log").read_text():
+            raise SystemExit("Family restart timing test failed")
     print("Combined MCR mixed-language checks passed.")
 
 

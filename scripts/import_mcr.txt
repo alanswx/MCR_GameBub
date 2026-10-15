@@ -2,5 +2,5 @@ Upstream: https://github.com/MiSTer-devel/Arcade-MCR3_MiSTer.git
 Branch: refs/heads/master
 Commit: 1ec8944c939ba5fcb4bcdfc5dd3e051a6273d141
 Verified UTC: 2026-10-15
-Patches: explicit T80 ENTITY instantiations and 9-bit I/O parity mask; shared-variable dual-port RAM; static VHDL-93 port signals; SD-loaded SSIO timing PROM.
+Patches: explicit T80 ENTITY instantiations and 9-bit I/O parity mask; zero-power-up RAM and shared-variable dual-port RAM; static VHDL-93 port signals; SD-loaded SSIO timing PROM.
 Omitted: MiSTer top/platform, PLL, SDRAM, sample player, ROM images.

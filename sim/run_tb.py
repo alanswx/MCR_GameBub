@@ -18,6 +18,7 @@ from check_rtl import main as check_rtl
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument("--trace-cpu", action="store_true")
     p.add_argument("--backend", choices=("xsim", "verilator"), default="xsim")
     p.add_argument("--rom", type=Path, default=Path("scratch/roms/tapper.rom"))
     p.add_argument("--prom", type=Path, default=Path("scratch/roms/ssio.prom"))
@@ -75,6 +76,8 @@ def main():
     for name in ("rom", "prom", "out", "frames", "dump", "aspect", "coin", "start", "portrait_sideways"):
         argument = f"{name}={getattr(args, name)}"
         command += ["--testplusarg", argument] if args.backend == "xsim" else ["+" + argument]
+    if args.trace_cpu:
+        command += ["--testplusarg", "trace_cpu"] if args.backend == "xsim" else ["+trace_cpu"]
     checksum = zlib.crc32(args.rom.read_bytes())
     known_games = {0x0f584827: (0, 0), 0x3f49e94e: (1, 0), 0x085cde56: (5, 1), 0xa2403144: (0, 1)}
     if checksum not in known_games:

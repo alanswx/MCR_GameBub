@@ -616,3 +616,33 @@ The portrait bitstream's synthesis still uses 90/135 BRAM tiles (11,546
 LUTs); final routed timing is in progress. This is a private local prototype, with no
 remote fork, push or public release. Public release remains subject to the
 framework process and licensing decisions already documented above.
+
+
+The startup investigation found two compatibility details. Official MCR2
+uses a 40,000,000-clock delayed second reset, versus MCR3's 65,535 clocks.
+The combined wrapper had reused the short interval. Reset sequencers now
+retain each family's interval, and the regression checks every clock across
+cold and manual resets (80 million clocks total for the long counter).
+The full-core frame collector now discards any partial frame interrupted
+by a restart. Startup may legitimately fade to black between color tests;
+the checker requires at least one fully defined visible frame during the
+run and no undefined pixels in its final frame, rather than requiring that
+an arbitrary last frame be nonblack. This remains a display/boot check, not
+a gameplay assertion.
+
+Inferred VHDL RAM was also uninitialized in the four-state model, while
+Vivado's RAMB36E1 defaults its INIT parameters to zero. Satan's Hollow backs
+up and restores RAM during its startup test, propagating undefined video
+state in that model. The import now explicitly initializes the common
+single/dual-port RAM arrays to zero to match FPGA power-up. This is only
+power-up initialization; CPU resets continue to preserve their contents.
+The live MCR3 upstream HEAD was rechecked and remains
+`1ec8944c939ba5fcb4bcdfc5dd3e051a6273d141`; the import manifest records the
+additional exact-text patch. No game ROM or PROM data is embedded.
+
+`sim/render_rotated.py` renders a captured native framebuffer through the
+production mapper and a three-cycle read-pipeline model. Coordinate-coded
+full-image checks pass on LCD clockwise and HDMI counterclockwise output,
+including the first visible pixels across wrapped blanking and all borders.
+The prototype is now 0.3.1, superseding the earlier 0.3.0 preview ZIP.
+Corrected full-core boot validation and the final build are in progress.

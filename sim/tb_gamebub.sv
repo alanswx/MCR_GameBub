@@ -166,12 +166,25 @@ module tb_gamebub;
     reg [8:0] frame [0:76799];
     integer unknown_pixels = 0;
     integer x = 0, y = 0, number = 0, colored = 0, audio_changes = 0;
+    bit defined_visible_frame = 0;
     reg vb_q = 1;
     reg [15:0] audio_q = 0;
     integer fd, i;
+    bit trace_cpu = 0;
+    reg [15:0] trace_count = 0;
+    initial trace_cpu = $test$plusargs("trace_cpu");
+    always @(posedge clk_sys) if (running && trace_cpu) begin
+        trace_count <= trace_count + 1'b1;
+        if (trace_count == 0) begin
+            $display("CPU BUS frame=%0d addr=%h data=%h reset=%b", number,dut.cpu_addr,dut.cpu_data,dut.machine_reset);
+            $fflush();
+        end
+    end
     always @(posedge clk_sys) begin
         #1;
-        if (running && !dut.machine_reset) begin
+        if (running && dut.machine_reset) begin
+            x=0; y=0; colored=0; unknown_pixels=0; vb_q=1;
+        end else if (running) begin
             vb_q <= v_vblank;
             if (a_left !== audio_q) audio_changes++;
             audio_q = a_left;
@@ -189,6 +202,7 @@ module tb_gamebub;
             if (v_vblank && !vb_q) begin
                 if (y != 240 || x != 0) $fatal(1, "Frame size %0d,%0d", x,y);
                 number++;
+                if (unknown_pixels == 0 && colored > 0) defined_visible_frame = 1;
                 if (number % dump == 0 || number == frames) begin
                     fd = $fopen($sformatf("%s/frame_%04d.ppm",out_path,number), "wb");
                     if (!fd) $fatal(1, "Cannot write frame");
@@ -199,11 +213,12 @@ module tb_gamebub;
                     $fclose(fd);
                     $display("FRAME %0d: colored=%0d unknown=%0d audio_changes=%0d", number,colored,unknown_pixels,audio_changes);
                 end
+                $fflush();
                 btn[10] = number >= coin_frame && number < coin_frame+6 && coin_frame >= 0;
                 btn[11] = number >= start_frame && number < start_frame+6 && start_frame >= 0;
                 if (number == frames) begin
                     if (unknown_pixels != 0) $fatal(1, "Final frame has %0d unknown pixels", unknown_pixels);
-                    if (colored == 0) $fatal(1, "Final frame is black");
+                    if (!defined_visible_frame) $fatal(1, "No fully defined visible frame during startup");
                     $display("GAMEBUB PASS: %0d complete frames",number);
                     $finish;
                 end

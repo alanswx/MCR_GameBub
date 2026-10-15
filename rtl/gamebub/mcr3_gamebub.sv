@@ -83,11 +83,17 @@ module mcr3_gamebub (
         .game_shollow(game_shollow), .portrait_sideways(portrait_sideways),
         .debug_status(debug_status)
     );
-    wire machine_reset;
+    wire machine_reset, m2_reset_sequence, m3_reset_sequence;
+    assign machine_reset = game_mcr2 ? m2_reset_sequence : m3_reset_sequence;
     gb_mcr_reset reset_sequence (
         .clk(clk_sys),
         .request(reset || core_reset || act_reset || !initialized),
-        .machine_reset(machine_reset)
+        .machine_reset(m3_reset_sequence)
+    );
+    gb_mcr_reset #(.RESTART_CYCLES(40000000)) reset_sequence_mcr2 (
+        .clk(clk_sys),
+        .request(reset || core_reset || act_reset || !initialized),
+        .machine_reset(m2_reset_sequence)
     );
 
     wire [13:0] sound_addr;
