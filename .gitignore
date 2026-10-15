@@ -1,0 +1,49 @@
+# --- Build outputs -----------------------------------------------------------
+# Mill/Chisel and the framework's Vivado runs (bitstreams land in build/)
+/build/
+/out/
+# Vivado debris if it is ever run from the repo root
+.Xil/
+*.jou
+vivado*.log
+vivado_pid*.str
+webtalk*
+usage_statistics_webtalk.*
+# Vivado xsim
+xsim.dir/
+*.wdb
+*.pb
+
+# --- Simulation --------------------------------------------------------------
+/sim/obj_*
+/sim/work*/
+/sim_out*/
+*.fst
+*.vcd
+*.ghw
+
+# --- Copyrighted data: never commit --------------------------------------------
+# MAME ROM sets, the ROM files built from them, high-score/NVRAM saves,
+# sound samples. MRA files (XML descriptions, no ROM data) may be committed.
+*.zip
+*.rom
+*.bin
+*.arc
+*.nv
+*.nvm
+*.wav
+*.7z
+/releases/
+
+# --- Scratch and editor/OS noise -----------------------------------------------
+/scratch/
+.DS_Store
+__pycache__/
+*.pyc
+.bsp/
+.metals/
+.bloop/
+.idea/
+.vscode/
+/.venv/
+._*
